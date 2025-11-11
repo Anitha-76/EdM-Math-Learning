@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematics Learning Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #000000, #1a0a0a);
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            position: relative;
+        }
+
+        /* Portal Title */
+        .portal-title {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .portal-title h1 {
+            color: #d4a574;
+            font-size: 48px;
+            font-weight: bold;
+            text-shadow:
+                0 0 10px rgba(212, 165, 116, 0.8),
+                0 0 20px rgba(212, 165, 116, 0.6),
+                0 0 30px rgba(212, 165, 116, 0.4);
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        .portal-title p {
+            color: #c9b699;
+            font-size: 18px;
+            font-style: italic;
+            text-shadow: 0 0 10px rgba(201, 182, 153, 0.5);
+        }
+
+        /* Navigation Menu */
+        .nav-menu {
+            position: fixed;
+            bottom: 250px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+        }
+
+        .lesson-card {
+            background: linear-gradient(135deg, rgba(44, 24, 16, 0.9), rgba(26, 15, 10, 0.9));
+            border: 3px solid rgba(139, 69, 19, 0.8);
+            border-radius: 15px;
+            padding: 25px 30px;
+            min-width: 250px;
+            max-width: 300px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.6),
+                inset 0 0 20px rgba(212, 165, 116, 0.1);
+            text-decoration: none;
+            display: block;
+            pointer-events: auto;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: #d4a574;
+            box-shadow:
+                0 12px 30px rgba(212, 165, 116, 0.5),
+                inset 0 0 30px rgba(212, 165, 116, 0.2),
+                0 0 40px rgba(255, 165, 0, 0.4);
+        }
+
+        .lesson-card h3 {
+            color: #d4a574;
+            font-size: 22px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .lesson-card p {
+            color: #c9b699;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .lesson-icon {
+            font-size: 40px;
+            text-align: center;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        /* Background portraits */
+        .background-portraits {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .portrait {
+            position: absolute;
+            width: 150px;
+            height: 200px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .portrait-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .portrait:hover .portrait-inner {
+            transform: rotateY(180deg);
+        }
+
+        .portrait-front,
+        .portrait-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(139, 69, 19, 0.6);
+        }
+
+        .portrait-front {
+            background: #2c1810;
+            overflow: hidden;
+        }
+
+        .portrait-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .portrait-back {
+            background: linear-gradient(135deg, #3a2010, #1f1208);
+            transform: rotateY(180deg);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .portrait-back h3 {
+            color: #d4a574;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .portrait-back p {
+            color: #c9b699;
+            font-size: 11px;
+            line-height: 1.4;
+            text-align: justify;
+        }
+
+        canvas {
+            display: block;
+            cursor: pointer;
+            position: relative;
+            z-index: 3;
+        }
+
+        .torch-base {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 180px;
+            z-index: 6;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .torch-top {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(to bottom, #4a2511, #654321);
+            border-radius: 0;
+            position: relative;
+        }
+
+        .torch-top::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5px;
+            right: 5px;
+            height: 12px;
+            background: linear-gradient(to right, #8B4513, #654321, #8B4513);
+            border-radius: 3px;
+        }
+
+        .torch-handle {
+            width: 35px;
+            height: 140px;
+            background: linear-gradient(to right, #5c3317, #8B4513, #5c3317);
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: inset -2px 0 5px rgba(0, 0, 0, 0.5), inset 2px 0 5px rgba(139, 69, 19, 0.5);
+            position: relative;
+        }
+
+        .torch-handle::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            bottom: 20px;
+            left: 5px;
+            right: 5px;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 3px,
+                rgba(0, 0, 0, 0.1) 3px,
+                rgba(0, 0, 0, 0.1) 4px
+            );
+        }
+
+        .symbol {
+            position: fixed;
+            font-size: 42px;
+            font-weight: bold;
+            pointer-events: none;
+            opacity: 0;
+            color: #ffffff;
+            text-shadow:
+                0 0 10px #ffff00,
+                0 0 20px #ff6b35,
+                0 0 30px #ff4500,
+                0 0 40px #ff0000;
+            animation: sparkle 2.5s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes sparkle {
+            0% {
+                opacity: 0;
+                transform: translateY(0) translateX(0) scale(0.3) rotate(0deg);
+                filter: brightness(2);
+            }
+            10% {
+                opacity: 1;
+                filter: brightness(3);
+            }
+            50% {
+                opacity: 0.8;
+                filter: brightness(2);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(var(--sparkle-y)) translateX(var(--sparkle-x)) scale(0.8) rotate(720deg);
+                filter: brightness(0.5);
+            }
+        }
+
+        .curve {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0;
+            animation: curveEmerge 4s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes curveEmerge {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(0.3);
+            }
+            15% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-500px) scale(1.2) rotate(180deg);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .portal-title h1 {
+                font-size: 32px;
+            }
+
+            .portal-title p {
+                font-size: 14px;
+            }
+
+            .nav-menu {
+                bottom: 220px;
+                gap: 15px;
+            }
+
+            .lesson-card {
+                min-width: 200px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Portal Title -->
+    <div class="portal-title">
+        <h1>Mathematics Learning Portal</h1>
+        <p>Ignite Your Mathematical Journey</p>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu">
+        <a href="http://127.0.0.1:8050" target="_blank" class="lesson-card">
+            <div class="lesson-icon">📊</div>
+            <h3>Statistics Explorer</h3>
+            <p>Learn mean, median, variance, and standard deviation through Cambridge weather data</p>
+        </a>
+
+        <a href="#" class="lesson-card" style="opacity: 0.6; cursor: not-allowed;">
+            <div class="lesson-icon">📐</div>
+            <h3>Coming Soon</h3>
+            <p>More exciting math lessons on the way!</p>
+        </a>
+    </div>
+
+    <!-- Background portraits -->
+    <div class="background-portraits" id="portraitContainer"></div>
+
+    <!-- Torch -->
+    <div class="torch-base">
+        <div class="torch-top"></div>
+        <div class="torch-handle"></div>
+    </div>
+
+    <canvas id="fireCanvas"></canvas>
+
+    <script>
+        // Create background portraits with actual images and placeholders
+        const mathematicians = [
+            {
+                name: 'Aryabhata',
+                era: '476-550 CE',
+                image: '../Session 1/Aryabhatta.jpeg',
+                history: 'Ancient Indian mathematician and astronomer. Pioneered the concept of zero and place value system. Calculated π accurately and explained eclipses scientifically.'
+            },
+            {
+                name: 'Madhava of Sangamagrama',
+                era: '1340-1425 CE',
+                image: '../Session 1/Madhava.jpg',
+                history: 'Founder of the Kerala School of Mathematics. Discovered infinite series for trigonometric functions centuries before European mathematicians.'
+            },
+            {
+                name: 'Srinivasa Ramanujan',
+                era: '1887-1920',
+                image: '../Session 1/Ramanujam.jpg',
+                history: 'Self-taught mathematical genius who made extraordinary contributions to number theory, infinite series, and continued fractions with almost no formal training.'
+            },
+            {
+                name: 'Shakuntala Devi',
+                era: '1929-2013',
+                image: '../Session 1/Shakuntala.jpeg',
+                history: 'Known as the "Human Computer" for her exceptional mental calculation abilities. Calculated the 23rd root of a 201-digit number mentally in 50 seconds.'
+            },
+            {
+                name: 'C. K. Raju',
+                era: 'b. 1950s',
+                image: '../Session 1/CK Raju.jpg',
+                history: 'Contemporary mathematician and philosopher who works on the transmission of mathematical ideas across cultures and time-keeping systems.'
+            }
+        ];
+
+        const portraitContainer = document.getElementById('portraitContainer');
+
+        // Define fixed positions for portraits
+        const portraitWidth = 150;
+        const portraitHeight = 200;
+        const margin = 50;
+        const sideMargin = window.innerWidth / 2 - 300;
+
+        const positions = [
+            // Left side - 2 portraits vertically (closer to fire)
+            { x: sideMargin, y: 100 },
+            { x: sideMargin, y: window.innerHeight - portraitHeight - margin },
+
+            // Top center - 1 portrait above fire
+            { x: window.innerWidth / 2 - portraitWidth / 2, y: 50 },
+
+            // Right side - 2 portraits vertically
+            { x: window.innerWidth - portraitWidth - sideMargin, y: 100 },
+            { x: window.innerWidth - portraitWidth - sideMargin, y: window.innerHeight - portraitHeight - margin }
+        ];
+
+        mathematicians.forEach((mathematician, index) => {
+            const portrait = document.createElement('div');
+            portrait.className = 'portrait';
+
+            // Use predefined position
+            const pos = positions[index];
+            portrait.style.left = pos.x + 'px';
+            portrait.style.top = pos.y + 'px';
+            portrait.style.pointerEvents = 'auto';
+
+            // Create inner container for flip effect
+            const portraitInner = document.createElement('div');
+            portraitInner.className = 'portrait-inner';
+
+            // Create front face
+            const portraitFront = document.createElement('div');
+            portraitFront.className = 'portrait-front';
+
+            if (mathematician.image) {
+                // Use actual photograph
+                const img = document.createElement('img');
+                img.src = mathematician.image;
+                img.onload = function() {
+                    console.log('Image loaded:', mathematician.image);
+                };
+                img.onerror = function() {
+                    console.error('Image failed to load:', mathematician.image);
+                    // Create fallback if image doesn't load
+                    portraitFront.style.background = 'linear-gradient(135deg, #2c1810, #1a0f0a)';
+                    portraitFront.style.display = 'flex';
+                    portraitFront.style.flexDirection = 'column';
+                    portraitFront.style.justifyContent = 'center';
+                    portraitFront.style.alignItems = 'center';
+                    portraitFront.style.padding = '10px';
+                    portraitFront.innerHTML = `
+                        <div style="color: #d4a574; font-size: 16px; margin-bottom: 5px; text-align: center; font-weight: bold;">${mathematician.name}</div>
+                        <div style="color: #d4a574; font-size: 12px; opacity: 0.7; text-align: center;">${mathematician.era}</div>
+                    `;
+                };
+                portraitFront.appendChild(img);
+
+                // Add name overlay at bottom
+                const nameOverlay = document.createElement('div');
+                nameOverlay.style.position = 'absolute';
+                nameOverlay.style.bottom = '0';
+                nameOverlay.style.left = '0';
+                nameOverlay.style.right = '0';
+                nameOverlay.style.background = 'rgba(0, 0, 0, 0.8)';
+                nameOverlay.style.color = '#d4a574';
+                nameOverlay.style.padding = '8px';
+                nameOverlay.style.fontSize = '13px';
+                nameOverlay.style.textAlign = 'center';
+                nameOverlay.style.fontWeight = 'bold';
+                nameOverlay.style.borderRadius = '0 0 10px 10px';
+                nameOverlay.textContent = mathematician.name;
+                portraitFront.appendChild(nameOverlay);
+            }
+
+            // Create back face with history
+            const portraitBack = document.createElement('div');
+            portraitBack.className = 'portrait-back';
+            portraitBack.innerHTML = `
+                <h3>${mathematician.name}</h3>
+                <p>${mathematician.history}</p>
+            `;
+
+            // Assemble the portrait
+            portraitInner.appendChild(portraitFront);
+            portraitInner.appendChild(portraitBack);
+            portrait.appendChild(portraitInner);
+            portraitContainer.appendChild(portrait);
+        });
+
+        const canvas = document.getElementById('fireCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Fire position (center bottom, on top of torch) - torch flame
+        const fireX = canvas.width / 2;
+        const fireY = canvas.height - 200; // Position at top of torch
+        const fireRadius = 50;
+
+        // Particle system for fire (torch flame - more upward focused, reduced height)
+        class FireParticle {
+            constructor(x, y) {
+                this.x = x + (Math.random() - 0.5) * 25; // Narrower flame
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 1; // Less horizontal movement
+                this.vy = -Math.random() * 3 - 2; // Reduced upward movement for shorter flame
+                this.life = 1;
+                this.decay = Math.random() * 0.02 + 0.015; // Faster decay for shorter flame
+                this.size = Math.random() * 7 + 3;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+                this.size *= 0.98;
+            }
+
+            draw() {
+                if (this.life <= 0) return;
+
+                ctx.globalAlpha = this.life;
+
+                // Create gradient for fire effect
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.size
+                );
+
+                if (this.life > 0.7) {
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(0.3, '#ffff00');
+                    gradient.addColorStop(0.6, '#ff6600');
+                    gradient.addColorStop(1, '#ff0000');
+                } else if (this.life > 0.4) {
+                    gradient.addColorStop(0, '#ffff00');
+                    gradient.addColorStop(0.5, '#ff6600');
+                    gradient.addColorStop(1, '#ff0000');
+                } else {
+                    gradient.addColorStop(0, '#ff6600');
+                    gradient.addColorStop(0.5, '#ff0000');
+                    gradient.addColorStop(1, '#330000');
+                }
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        let fireParticles = [];
+        let isHovering = false;
+
+        // Basic mathematical symbols for middle school
+        const mathSymbols = [
+            '+', '−', '×', '÷', '=',
+            '½', '¼', '¾',
+            '²', '³',
+            'π', '√',
+            '<', '>', '≤', '≥', '≠',
+            '%', '°',
+            '(', ')', '[', ']'
+        ];
+
+        // SVG paths for mathematical curves
+        function createCurve(x, y) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("width", "200");
+            svg.setAttribute("height", "200");
+            svg.classList.add("curve");
+            svg.style.left = (x - 100) + 'px';
+            svg.style.top = y + 'px';
+
+            const curveTypes = [
+                // Parabola (upward opening)
+                () => {
+                    const path = document.createElementNS(svgNS, "path");
+                    let d = "M 0,200 ";
+                    for (let i = 0; i <= 200; i += 5) {
+                        const y = 200 - Math.pow((i - 100) / 20, 2);
+                        d += `L ${i},${y} `;
+                    }
+                    path.setAttribute("d", d);
+                    path.setAttribute("stroke", `hsl(${Math.random() * 60 + 10}, 100%, 60%)`);
+                    path.setAttribute("stroke-width", "3");
+                    path.setAttribute("fill", "none");
+                    path.setAttribute("filter", "drop-shadow(0 0 5px currentColor)");
+                    return path;
+                },
+                // Parabola (downward opening)
+                () => {
+                    const path = document.createElementNS(svgNS, "path");
+                    let d = "M 0,0 ";
+                    for (let i = 0; i <= 200; i += 5) {
+                        const y = Math.pow((i - 100) / 20, 2);
+                        d += `L ${i},${y} `;
+                    }
+                    path.setAttribute("d", d);
+                    path.setAttribute("stroke", `hsl(${Math.random() * 60 + 10}, 100%, 60%)`);
+                    path.setAttribute("stroke-width", "3");
+                    path.setAttribute("fill", "none");
+                    path.setAttribute("filter", "drop-shadow(0 0 5px currentColor)");
+                    return path;
+                },
+                // Hyperbola (horizontal branches)
+                () => {
+                    const path = document.createElementNS(svgNS, "path");
+                    let d = "";
+                    // Right branch
+                    for (let i = 30; i <= 200; i += 5) {
+                        const y = 100 + Math.sqrt(Math.pow(i - 100, 2) - 900) / 2;
+                        if (i === 30) {
+                            d += `M ${i},${y} `;
+                        } else {
+                            d += `L ${i},${y} `;
+                        }
+                    }
+                    // Left branch (upper)
+                    d += " M 0,100 ";
+                    for (let i = 0; i <= 70; i += 5) {
+                        const y = 100 - Math.sqrt(Math.pow(i - 100, 2) - 900) / 2;
+                        d += `L ${i},${y} `;
+                    }
+                    path.setAttribute("d", d);
+                    path.setAttribute("stroke", `hsl(${Math.random() * 60 + 10}, 100%, 60%)`);
+                    path.setAttribute("stroke-width", "3");
+                    path.setAttribute("fill", "none");
+                    path.setAttribute("filter", "drop-shadow(0 0 5px currentColor)");
+                    return path;
+                },
+                // Hyperbola (vertical branches)
+                () => {
+                    const path = document.createElementNS(svgNS, "path");
+                    let d = "";
+                    // Upper branch
+                    for (let i = 0; i <= 200; i += 5) {
+                        const y = 100 - Math.sqrt(Math.pow(i - 100, 2) + 1600) / 3;
+                        if (i === 0) {
+                            d += `M ${i},${y} `;
+                        } else {
+                            d += `L ${i},${y} `;
+                        }
+                    }
+                    // Lower branch
+                    d += " M 0,";
+                    for (let i = 0; i <= 200; i += 5) {
+                        const y = 100 + Math.sqrt(Math.pow(i - 100, 2) + 1600) / 3;
+                        if (i === 0) {
+                            d += `${y} `;
+                        } else {
+                            d += `L ${i},${y} `;
+                        }
+                    }
+                    path.setAttribute("d", d);
+                    path.setAttribute("stroke", `hsl(${Math.random() * 60 + 10}, 100%, 60%)`);
+                    path.setAttribute("stroke-width", "3");
+                    path.setAttribute("fill", "none");
+                    path.setAttribute("filter", "drop-shadow(0 0 5px currentColor)");
+                    return path;
+                }
+            ];
+
+            const randomCurve = curveTypes[Math.floor(Math.random() * curveTypes.length)]();
+            svg.appendChild(randomCurve);
+            document.body.appendChild(svg);
+
+            // Remove after animation
+            setTimeout(() => svg.remove(), 4000);
+        }
+
+        function spawnSymbol(x, y) {
+            const symbol = document.createElement('div');
+            symbol.classList.add('symbol');
+            symbol.textContent = mathSymbols[Math.floor(Math.random() * mathSymbols.length)];
+
+            // Random movement in all directions for sparkle effect
+            const angle = Math.random() * Math.PI * 2; // Random angle in full circle
+            const distance = Math.random() * 250 + 150; // Distance sparkle travels
+            const sparkleX = Math.cos(angle) * distance;
+            const sparkleY = Math.sin(angle) * distance - 100; // Slight upward bias
+
+            symbol.style.setProperty('--sparkle-x', sparkleX + 'px');
+            symbol.style.setProperty('--sparkle-y', sparkleY + 'px');
+
+            symbol.style.left = (x + (Math.random() - 0.5) * 50) + 'px';
+            symbol.style.top = y + 'px';
+
+            document.body.appendChild(symbol);
+
+            // Remove after animation
+            setTimeout(() => symbol.remove(), 2500);
+        }
+
+        // Check if mouse is over fire or torch
+        function isOverTorch(mouseX, mouseY) {
+            const dx = mouseX - fireX;
+            const dy = mouseY - fireY;
+            const distToFire = Math.sqrt(dx * dx + dy * dy);
+
+            // Check if over flame or over torch body
+            const overFlame = distToFire < (fireRadius + 20);
+            const overTorchBody = Math.abs(mouseX - fireX) < 50 &&
+                                  mouseY > (canvas.height - 200) &&
+                                  mouseY < canvas.height - 20;
+
+            return overFlame || overTorchBody;
+        }
+
+        let lastSymbolSpawn = 0;
+        let lastCurveSpawn = 0;
+
+        // Use document-level event to catch all mouse movements
+        document.addEventListener('mousemove', (e) => {
+            const isOver = isOverTorch(e.clientX, e.clientY);
+
+            if (isOver) {
+                isHovering = true;
+
+                const now = Date.now();
+
+                // Spawn symbols more frequently
+                if (now - lastSymbolSpawn > 100) {
+                    spawnSymbol(fireX, fireY);
+                    lastSymbolSpawn = now;
+                }
+
+                // Spawn curves less frequently
+                if (now - lastCurveSpawn > 600) {
+                    createCurve(fireX, fireY);
+                    lastCurveSpawn = now;
+                }
+            } else {
+                isHovering = false;
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Spawn fire particles continuously (reduced)
+            for (let i = 0; i < 2; i++) {
+                fireParticles.push(new FireParticle(fireX, fireY));
+            }
+
+            // When hovering, spawn slightly more fire
+            if (isHovering) {
+                for (let i = 0; i < 3; i++) {
+                    fireParticles.push(new FireParticle(fireX, fireY));
+                }
+            }
+
+            // Update and draw particles
+            fireParticles = fireParticles.filter(particle => {
+                particle.update();
+                particle.draw();
+                return particle.life > 0;
+            });
+
+            ctx.globalAlpha = 1;
+
+            requestAnimationFrame(animate);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        animate();
+    </script>
+</body>
+</html>

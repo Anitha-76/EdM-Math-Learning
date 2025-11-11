@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Job Saver - Bookmarklet</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .container {
+            background: white;
+            color: #333;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #0077b5;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .bookmarklet-box {
+            background: #f5f5f5;
+            border: 2px dashed #0077b5;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        .bookmarklet {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #0077b5;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+        .bookmarklet:hover {
+            background: #005582;
+        }
+        .instructions {
+            background: #e7f3ff;
+            padding: 20px;
+            border-left: 4px solid #0077b5;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .instructions h3 {
+            color: #0077b5;
+            margin-top: 0;
+        }
+        .step {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .step::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #0077b5;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .note {
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔖 LinkedIn Job Saver Bookmarklet</h1>
+
+        <p>This bookmarklet allows you to quickly save LinkedIn job URLs to your tracker with just one click!</p>
+
+        <div class="bookmarklet-box">
+            <p><strong>Drag this button to your bookmarks bar:</strong></p>
+            <a href="javascript:(function(){var url=window.location.href;if(url.includes('linkedin.com/jobs/view')){prompt('Copy this URL and add it to saved_jobs.txt:',url);}else{alert('Please use this bookmarklet on a LinkedIn job posting page.');}})();" class="bookmarklet">
+                💼 Save LinkedIn Job
+            </a>
+            <p class="note">Or right-click and add to bookmarks</p>
+        </div>
+
+        <div class="instructions">
+            <h3>📝 How to Use:</h3>
+
+            <div class="step">
+                <strong>Install the Bookmarklet:</strong><br>
+                Drag the "Save LinkedIn Job" button above to your browser's bookmarks bar.
+                If you don't see the bookmarks bar, press <code>Ctrl+Shift+B</code> (Windows) or <code>Cmd+Shift+B</code> (Mac).
+            </div>
+
+            <div class="step">
+                <strong>Browse LinkedIn Jobs:</strong><br>
+                Go to LinkedIn and search for jobs as you normally would.
+            </div>
+
+            <div class="step">
+                <strong>Save a Job:</strong><br>
+                When you find an interesting job, click the "Save LinkedIn Job" bookmarklet in your bookmarks bar.
+            </div>
+
+            <div class="step">
+                <strong>Copy the URL:</strong><br>
+                A popup will appear with the job URL. Copy it (Ctrl+C or Cmd+C).
+            </div>
+
+            <div class="step">
+                <strong>Add to saved_jobs.txt:</strong><br>
+                Paste the URL into your <code>saved_jobs.txt</code> file (one URL per line).
+            </div>
+
+            <div class="step">
+                <strong>Process Jobs:</strong><br>
+                Run <code>python main.py --process</code> to extract job details and add them to Google Sheets.
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Note:</strong> This bookmarklet only works on LinkedIn job posting pages (URLs containing
+            <code>linkedin.com/jobs/view</code>). Make sure you're on an actual job posting before clicking it.
+        </div>
+
+        <div class="instructions">
+            <h3>🚀 Alternative: Manual Method</h3>
+            <p>If you prefer not to use the bookmarklet, you can manually copy job URLs:</p>
+            <ol>
+                <li>Open a LinkedIn job posting</li>
+                <li>Copy the URL from your browser's address bar</li>
+                <li>Paste it into <code>saved_jobs.txt</code></li>
+            </ol>
+        </div>
+
+        <div class="instructions">
+            <h3>💡 Pro Tips</h3>
+            <ul>
+                <li>Save multiple jobs throughout the day, then process them all at once</li>
+                <li>Set up a scheduled task to run the script daily</li>
+                <li>Use the daily digest feature to get email summaries</li>
+                <li>Keep notes in the Google Sheet about each application</li>
+            </ul>
+        </div>
+
+        <p style="text-align: center; margin-top: 40px; color: #666;">
+            <strong>Happy Job Hunting! 🎯</strong>
+        </p>
+    </div>
+</body>
+</html>
