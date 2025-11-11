@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern Recognition - Rotational Symmetry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #000000, #1a0a0a);
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            position: relative;
+            display: flex;
+        }
+
+        /* Left Sidebar Navigation */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #1a0f0a, #2c1810);
+            border-right: 2px solid rgba(139, 69, 19, 0.6);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar h2 {
+            color: #d4a574;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid rgba(139, 69, 19, 0.6);
+            padding-bottom: 10px;
+        }
+
+        .nav-item {
+            display: block;
+            color: #c9b699;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: rgba(139, 69, 19, 0.2);
+            transition: all 0.3s ease;
+            font-size: 14px;
+            border: 1px solid rgba(139, 69, 19, 0.3);
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 69, 19, 0.4);
+            color: #ffcc80;
+            transform: translateX(5px);
+            border-color: rgba(139, 69, 19, 0.6);
+        }
+
+        .nav-item.active {
+            background: rgba(139, 69, 19, 0.5);
+            color: #ffcc80;
+            border-color: #d4a574;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Page Transition Animations */
+        body {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            color: #d4a574;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(212, 165, 116, 0.5);
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #c9b699;
+            line-height: 1.6;
+            max-width: 800px;
+        }
+
+        .math-connection {
+            background: rgba(139, 69, 19, 0.2);
+            border: 1px solid rgba(139, 69, 19, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            max-width: 800px;
+        }
+
+        .math-connection h3 {
+            color: #d4a574;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .math-connection p {
+            color: #c9b699;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Game Container */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #ui-container {
+            background: rgba(139, 69, 19, 0.2);
+            border: 1px solid rgba(139, 69, 19, 0.4);
+            border-radius: 10px;
+            padding: 15px 25px;
+            text-align: center;
+        }
+
+        #score-display {
+            font-size: 22px;
+            color: #c9b699;
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            color: #d4a574;
+            font-weight: bold;
+            font-size: 26px;
+        }
+
+        #instructions {
+            font-size: 14px;
+            color: #c9b699;
+            line-height: 1.5;
+        }
+
+        #phaser-game {
+            border: 2px solid rgba(139, 69, 19, 0.6);
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar Navigation -->
+    <div class="sidebar">
+        <h2>Math Learning</h2>
+        <nav>
+            <a href="math-fire-animation.html" class="nav-item">Fire Animation & History</a>
+            <a href="pattern-recognition-game.html" class="nav-item active">Pattern Recognition</a>
+            <a href="statistics-dashboard.html" class="nav-item">Statistical Measures</a>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Pattern Recognition: Rotational Symmetry</h1>
+            <p>A puzzle game exploring mathematical patterns and spatial reasoning</p>
+        </div>
+
+        <!-- Mathematical Connection -->
+        <div class="math-connection">
+            <h3>🔄 Mathematical Concepts</h3>
+            <p>
+                <strong>Rotational Symmetry:</strong> Each checkerboard tile can rotate to 4 positions (0°, 90°, 180°, 270°).
+                This game helps you understand <strong>angles</strong>, <strong>patterns</strong>, and <strong>spatial organization</strong>.
+                Try to create a uniform pattern where all tiles align perfectly - this demonstrates understanding of
+                <strong>regularity</strong> and <strong>symmetry</strong> in mathematics!
+            </p>
+        </div>
+
+        <!-- Game Container -->
+        <div id="game-container">
+            <div id="ui-container">
+                <div id="score-display">
+                    <span style="color: #c9b699;">Tiles Stopped:</span>
+                    <span id="stopped-count" class="highlight">0</span>
+                    <span style="color: #c9b699;">/</span>
+                    <span id="total-count" class="highlight">0</span>
+                </div>
+                <div id="instructions">
+                    Click on the rotating tiles to stop them. Create the most regular pattern you can!
+                </div>
+            </div>
+            <div id="phaser-game"></div>
+        </div>
+    </div>
+
+    <!-- Load Phaser from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+
+    <!-- Load game script -->
+    <script src="game.js"></script>
+
+    <script>
+        // Add smooth page transitions
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Don't transition if already on current page
+                if (this.classList.contains('active')) {
+                    e.preventDefault();
+                    return;
+                }
+
+                e.preventDefault();
+                const href = this.getAttribute('href');
+
+                // Add fade-out animation
+                document.body.style.animation = 'fadeOut 0.5s ease-in-out';
+
+                // Navigate after animation
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>

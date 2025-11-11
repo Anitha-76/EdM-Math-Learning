@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistical Measures</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #000000, #1a0a0a);
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            position: relative;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Sidebar Navigation */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #1a0f0a, #2c1810);
+            border-right: 2px solid rgba(139, 69, 19, 0.6);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .home-icon {
+            display: block;
+            text-align: center;
+            font-size: 40px;
+            color: #d4a574;
+            text-decoration: none;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: rgba(139, 69, 19, 0.2);
+            border: 2px solid rgba(139, 69, 19, 0.3);
+        }
+
+        .home-icon:hover {
+            background: rgba(139, 69, 19, 0.4);
+            transform: scale(1.1);
+            color: #ffcc80;
+        }
+
+        .sidebar h2 {
+            color: #d4a574;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid rgba(139, 69, 19, 0.6);
+            padding-bottom: 10px;
+        }
+
+        .nav-item {
+            display: block;
+            color: #c9b699;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: rgba(139, 69, 19, 0.2);
+            transition: all 0.3s ease;
+            font-size: 14px;
+            border: 1px solid rgba(139, 69, 19, 0.3);
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 69, 19, 0.4);
+            color: #ffcc80;
+            transform: translateX(5px);
+            border-color: rgba(139, 69, 19, 0.6);
+        }
+
+        .nav-item.active {
+            background: rgba(139, 69, 19, 0.5);
+            color: #ffcc80;
+            border-color: #d4a574;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-header {
+            background: linear-gradient(135deg, rgba(44, 24, 16, 0.9), rgba(26, 15, 10, 0.9));
+            border-bottom: 2px solid rgba(139, 69, 19, 0.6);
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .content-header h1 {
+            color: #d4a574;
+            font-size: 28px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(212, 165, 116, 0.5);
+        }
+
+        .content-header p {
+            color: #c9b699;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .dashboard-info {
+            background: rgba(139, 69, 19, 0.3);
+            border: 1px solid rgba(139, 69, 19, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            color: #ffcc80;
+            font-size: 13px;
+        }
+
+        .dashboard-info strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #d4a574;
+        }
+
+        .iframe-container {
+            flex: 1;
+            position: relative;
+            background: white;
+            border: 3px solid rgba(139, 69, 19, 0.6);
+            margin: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .loading-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #d4a574;
+            font-size: 18px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff6b6b;
+            background: rgba(26, 15, 10, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 107, 107, 0.5);
+            text-align: center;
+            max-width: 600px;
+            display: none;
+            z-index: 2;
+        }
+
+        .error-message h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .error-message p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .error-message code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #ffcc80;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar Navigation -->
+    <div class="sidebar">
+        <h2>Math Learning</h2>
+        <nav>
+            <a href="math-fire-animation.html" class="nav-item">Fire Animation & History</a>
+            <a href="pattern-recognition-game.html" class="nav-item">Pattern Recognition</a>
+            <a href="statistics-dashboard.html" class="nav-item active">Statistical Measures</a>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Statistical Measures Dashboard</h1>
+            <p style="font-size: 16px; line-height: 1.8; margin-bottom: 20px;">
+                Explore statistical measures including <strong>Mean (Average)</strong>, <strong>Median</strong>,
+                <strong>Variance</strong>, and <strong>Standard Deviation</strong> using real weather data from Cambridge, MA (2024).
+            </p>
+            <p style="font-size: 14px; color: #c9b699; margin-bottom: 25px;">
+                Click the button below to launch the interactive dashboard in a new tab where you can explore
+                temperature patterns across different seasons and compare various statistical measures.
+            </p>
+            <a href="http://127.0.0.1:8050" target="_blank" style="
+                display: inline-block;
+                padding: 15px 35px;
+                background: linear-gradient(135deg, #d4a574, #b8935e);
+                color: #1a0f0a;
+                text-decoration: none;
+                border-radius: 10px;
+                font-weight: bold;
+                font-size: 18px;
+                box-shadow: 0 5px 15px rgba(212, 165, 116, 0.4);
+                transition: all 0.3s ease;
+                border: 3px solid rgba(139, 69, 19, 0.6);
+            " onmouseover="this.style.transform='translateY(-3px) scale(1.02)'; this.style.boxShadow='0 8px 20px rgba(212, 165, 116, 0.6)';" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 5px 15px rgba(212, 165, 116, 0.4)';">
+                🚀 Launch Interactive Dashboard
+            </a>
+        </div>
+
+        <div class="iframe-container" style="background: linear-gradient(135deg, rgba(44, 24, 16, 0.5), rgba(26, 15, 10, 0.5)); display: flex; align-items: center; justify-content: center;">
+            <div style="text-align: center; padding: 40px; max-width: 700px;">
+                <div style="font-size: 80px; margin-bottom: 20px;">📈</div>
+                <h2 style="color: #d4a574; font-size: 32px; margin-bottom: 20px;">Interactive Dashboard Preview</h2>
+                <p style="color: #c9b699; font-size: 16px; line-height: 1.8; margin-bottom: 30px;">
+                    The Statistical Measures Dashboard features:
+                </p>
+                <div style="text-align: left; margin: 0 auto; max-width: 500px;">
+                    <ul style="color: #c9b699; font-size: 15px; line-height: 2; list-style: none; padding-left: 0;">
+                        <li>📊 <strong style="color: #d4a574;">Interactive Charts</strong> - Histograms, timelines, and box plots</li>
+                        <li>🌡️ <strong style="color: #d4a574;">Temperature Data</strong> - Real Cambridge weather from 2024</li>
+                        <li>📐 <strong style="color: #d4a574;">Statistical Measures</strong> - Mean, median, variance, std deviation</li>
+                        <li>🌍 <strong style="color: #d4a574;">Seasonal Analysis</strong> - Compare Winter, Spring, Summer, Fall</li>
+                        <li>🎯 <strong style="color: #d4a574;">Live Filtering</strong> - Select seasons and statistical measures</li>
+                    </ul>
+                </div>
+                <div style="margin-top: 40px; padding: 20px; background: rgba(139, 69, 19, 0.2); border: 2px solid rgba(139, 69, 19, 0.4); border-radius: 10px;">
+                    <p style="color: #ffcc80; font-size: 14px; margin-bottom: 15px;">
+                        <strong>💡 Tip:</strong> The dashboard opens in a new tab so you can view it side-by-side with your notes!
+                    </p>
+                    <a href="http://127.0.0.1:8050" target="_blank" style="
+                        display: inline-block;
+                        padding: 15px 30px;
+                        background: linear-gradient(135deg, #d4a574, #b8935e);
+                        color: #1a0f0a;
+                        text-decoration: none;
+                        border-radius: 10px;
+                        font-weight: bold;
+                        font-size: 18px;
+                        box-shadow: 0 5px 15px rgba(212, 165, 116, 0.4);
+                        transition: all 0.3s ease;
+                        border: 3px solid rgba(139, 69, 19, 0.6);
+                    " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 7px 20px rgba(212, 165, 116, 0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 5px 15px rgba(212, 165, 116, 0.4)';">
+                        🚀 Launch Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if server is running when page loads
+        fetch('http://127.0.0.1:8050')
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ Dashboard server is running and accessible');
+                } else {
+                    console.warn('⚠️ Dashboard server responded with an error');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Dashboard server is not accessible. Make sure to run: python cambridge_weather_dashboard.py');
+            });
+    </script>
+</body>
+</html>
