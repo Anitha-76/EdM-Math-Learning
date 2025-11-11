@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pattern Recognition - Rotational Symmetry</title>
+    <title>Geometry Explorer - Lines and Angles</title>
     <style>
         * {
             margin: 0;
@@ -109,28 +109,30 @@
             font-size: 16px;
             color: #c9b699;
             line-height: 1.6;
-            max-width: 800px;
+            max-width: 900px;
         }
 
-        .math-connection {
+        .learning-objectives {
             background: rgba(139, 69, 19, 0.2);
             border: 1px solid rgba(139, 69, 19, 0.4);
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
-            max-width: 800px;
+            max-width: 900px;
+            width: 100%;
         }
 
-        .math-connection h3 {
+        .learning-objectives h3 {
             color: #d4a574;
             font-size: 18px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
-        .math-connection p {
+        .learning-objectives ul {
             color: #c9b699;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.8;
+            padding-left: 25px;
         }
 
         /* Game Container */
@@ -139,32 +141,7 @@
             flex-direction: column;
             align-items: center;
             gap: 15px;
-        }
-
-        #ui-container {
-            background: rgba(139, 69, 19, 0.2);
-            border: 1px solid rgba(139, 69, 19, 0.4);
-            border-radius: 10px;
-            padding: 15px 25px;
-            text-align: center;
-        }
-
-        #score-display {
-            font-size: 22px;
-            color: #c9b699;
-            margin-bottom: 8px;
-        }
-
-        .highlight {
-            color: #d4a574;
-            font-weight: bold;
-            font-size: 26px;
-        }
-
-        #instructions {
-            font-size: 14px;
-            color: #c9b699;
-            line-height: 1.5;
+            width: 100%;
         }
 
         #phaser-game {
@@ -180,8 +157,8 @@
         <h2>Math Learning</h2>
         <nav>
             <a href="math-fire-animation.html" class="nav-item">Fire Animation & History</a>
-            <a href="pattern-recognition-game.html" class="nav-item active">Pattern Recognition</a>
-            <a href="geometry-explorer.html" class="nav-item">Geometry Explorer</a>
+            <a href="pattern-recognition-game.html" class="nav-item">Pattern Recognition</a>
+            <a href="geometry-explorer.html" class="nav-item active">Geometry Explorer</a>
             <a href="statistics-dashboard.html" class="nav-item">Statistical Measures</a>
         </nav>
     </div>
@@ -190,34 +167,25 @@
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>Pattern Recognition: Rotational Symmetry</h1>
-            <p>A puzzle game exploring mathematical patterns and spatial reasoning</p>
+            <h1>📐 Geometry Explorer: Lines and Angles</h1>
+            <p>An interactive journey through fundamental geometry concepts</p>
         </div>
 
-        <!-- Mathematical Connection -->
-        <div class="math-connection">
-            <h3>🔄 Mathematical Concepts</h3>
-            <p>
-                <strong>Rotational Symmetry:</strong> Each checkerboard tile can rotate to 4 positions (0°, 90°, 180°, 270°).
-                This game helps you understand <strong>angles</strong>, <strong>patterns</strong>, and <strong>spatial organization</strong>.
-                Try to create a uniform pattern where all tiles align perfectly - this demonstrates understanding of
-                <strong>regularity</strong> and <strong>symmetry</strong> in mathematics!
-            </p>
+        <!-- Learning Objectives -->
+        <div class="learning-objectives">
+            <h3>🎯 Learning Objectives</h3>
+            <ul>
+                <li>Understand lines, line segments, and rays</li>
+                <li>Identify different types of angles</li>
+                <li>Use rulers and protractors for measurement</li>
+                <li>Recognize parallel and intersecting lines</li>
+                <li>Find complementary and supplementary angles</li>
+                <li>Explore collinear points and points of concurrency</li>
+            </ul>
         </div>
 
         <!-- Game Container -->
         <div id="game-container">
-            <div id="ui-container">
-                <div id="score-display">
-                    <span style="color: #c9b699;">Tiles Stopped:</span>
-                    <span id="stopped-count" class="highlight">0</span>
-                    <span style="color: #c9b699;">/</span>
-                    <span id="total-count" class="highlight">0</span>
-                </div>
-                <div id="instructions">
-                    Click on the rotating tiles to stop them. Create the most regular pattern you can!
-                </div>
-            </div>
             <div id="phaser-game"></div>
         </div>
     </div>
@@ -226,13 +194,12 @@
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
     <!-- Load game script -->
-    <script src="game.js"></script>
+    <script src="geometry-game.js"></script>
 
     <script>
         // Add smooth page transitions
         document.querySelectorAll('.nav-item').forEach(link => {
             link.addEventListener('click', function(e) {
-                // Don't transition if already on current page
                 if (this.classList.contains('active')) {
                     e.preventDefault();
                     return;
@@ -240,11 +207,8 @@
 
                 e.preventDefault();
                 const href = this.getAttribute('href');
-
-                // Add fade-out animation
                 document.body.style.animation = 'fadeOut 0.5s ease-in-out';
 
-                // Navigate after animation
                 setTimeout(() => {
                     window.location.href = href;
                 }, 500);
