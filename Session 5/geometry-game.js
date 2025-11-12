@@ -193,8 +193,8 @@ class GeometryExplorer extends Phaser.Scene {
     }
 
     showRulerPractice() {
-        this.titleText.setText('📏 Ruler Practice');
-        this.instructionText.setText('Drag the ruler to measure the blue line. Align the 0 mark with the left end.');
+        this.titleText.setText('📏 Ruler Practice: Learn to Measure');
+        this.instructionText.setText('DRAG the ruler with your mouse. Line up the "0" mark with the LEFT dot. Read the number at the RIGHT dot to measure!');
 
         // Pre-drawn line to measure
         const lineStartX = 200;
@@ -238,8 +238,8 @@ class GeometryExplorer extends Phaser.Scene {
     }
 
     showDrawLine() {
-        this.titleText.setText('✏️ Draw a Line');
-        this.instructionText.setText('Click two points to draw a line exactly 8 cm long. Use the ruler to help!');
+        this.titleText.setText('✏️ Draw a Line Challenge');
+        this.instructionText.setText('STEP 1: Drag the ruler where you want. STEP 2: CLICK to place your first point. STEP 3: CLICK again 8 cm away!');
 
         // Ruler at top
         const ruler = this.createDraggableRuler(300, 180);
@@ -259,6 +259,11 @@ class GeometryExplorer extends Phaser.Scene {
                 // Draw point
                 graphics.fillStyle(0xFF9800);
                 graphics.fillCircle(pointer.x, pointer.y, 8);
+
+                if (this.points.length === 1) {
+                    this.feedbackText.setText('Good! Now click your second point 8 cm away');
+                    this.feedbackText.setColor('#c9b699');
+                }
 
                 if (this.points.length === 2) {
                     // Draw line
@@ -301,8 +306,8 @@ class GeometryExplorer extends Phaser.Scene {
     }
 
     showProtractorPractice() {
-        this.titleText.setText('📐 Protractor Practice');
-        this.instructionText.setText('Drag the protractor to measure the angle. Align the center with the vertex.');
+        this.titleText.setText('📐 Protractor Practice: Measure Angles');
+        this.instructionText.setText('DRAG the protractor. Put the RED CENTER DOT on the purple dot. Line up the 0° with the bottom line. Read the angle!');
 
         // Pre-drawn angle
         const angleX = 300;
@@ -353,8 +358,8 @@ class GeometryExplorer extends Phaser.Scene {
     }
 
     showDrawAngle() {
-        this.titleText.setText('🔺 Draw an Angle');
-        this.instructionText.setText('Click 3 points to create a 45° angle. Use the protractor to help!');
+        this.titleText.setText('🔺 Draw an Angle Challenge');
+        this.instructionText.setText('CLICK 3 points: First point, then VERTEX (corner), then third point. Make a 45° angle. Use the protractor!');
 
         // Protractor at top
         const protractor = this.createDraggableProtractor(500, 180);
@@ -422,7 +427,7 @@ class GeometryExplorer extends Phaser.Scene {
 
     showIdentifyAngles() {
         this.titleText.setText('🔍 Identify Angles');
-        this.instructionText.setText('Click on the ACUTE angle (less than 90°)');
+        this.instructionText.setText('CLICK on the ACUTE angle. Remember: Acute is LESS than 90° (smaller than a right angle)');
 
         const angles = [
             { x: 250, y: 300, deg: 45, name: 'Acute', correct: true },
@@ -479,8 +484,8 @@ class GeometryExplorer extends Phaser.Scene {
     }
 
     showParallelChallenge() {
-        this.titleText.setText('↔️ Parallel Lines');
-        this.instructionText.setText('Click on the pair of PARALLEL lines (never intersect)');
+        this.titleText.setText('↔️ Parallel Lines Challenge');
+        this.instructionText.setText('CLICK on the pair of PARALLEL lines. Parallel means they NEVER touch - always same distance apart!');
 
         // Option 1: Parallel lines
         const parallel = this.add.graphics();
@@ -557,8 +562,8 @@ class GeometryExplorer extends Phaser.Scene {
     }
 
     showFinalChallenge() {
-        this.titleText.setText('🎯 Final Challenge');
-        this.instructionText.setText('Draw two PARALLEL lines, each exactly 7 cm long. Use your tools!');
+        this.titleText.setText('🎯 Final Challenge: Master Geometry!');
+        this.instructionText.setText('Draw 2 PARALLEL lines, EACH 7 cm long. CLICK 2 points for line 1, then CLICK 2 points for line 2. Use the ruler!');
 
         // Ruler
         const ruler = this.createDraggableRuler(200, 150);
@@ -655,22 +660,32 @@ class GeometryExplorer extends Phaser.Scene {
         const cmCount = 14;
         const cmWidth = rulerWidth / cmCount;
 
+        // Helper function to draw ruler
+        const drawRuler = (graphics, bgColor, borderWidth) => {
+            graphics.clear();
+            graphics.fillStyle(bgColor);
+            graphics.fillRect(0, 0, rulerWidth, rulerHeight);
+            graphics.lineStyle(borderWidth, 0x8b4513);
+            graphics.strokeRect(0, 0, rulerWidth, rulerHeight);
+
+            // Draw all the centimeter marks
+            for (let i = 0; i <= cmCount; i++) {
+                const markX = i * cmWidth;
+                graphics.lineStyle(2, 0x000000);
+                graphics.beginPath();
+                graphics.moveTo(markX, 5);
+                graphics.lineTo(markX, 35);
+                graphics.strokePath();
+            }
+        };
+
         // Ruler body
         const ruler = this.add.graphics();
-        ruler.fillStyle(0xEDD5A8);
-        ruler.fillRect(0, 0, rulerWidth, rulerHeight);
-        ruler.lineStyle(2, 0x8b4513);
-        ruler.strokeRect(0, 0, rulerWidth, rulerHeight);
+        drawRuler(ruler, 0xEDD5A8, 2);
 
-        // Marks
+        // Number labels
         for (let i = 0; i <= cmCount; i++) {
             const markX = i * cmWidth;
-            ruler.lineStyle(2, 0x000000);
-            ruler.beginPath();
-            ruler.moveTo(markX, 5);
-            ruler.lineTo(markX, 35);
-            ruler.strokePath();
-
             const label = this.add.text(markX, rulerHeight - 15, i.toString(), {
                 fontSize: '14px',
                 fill: '#000000',
@@ -678,6 +693,14 @@ class GeometryExplorer extends Phaser.Scene {
             }).setOrigin(0.5);
             container.add(label);
         }
+
+        // Add "cm" label
+        const cmLabel = this.add.text(rulerWidth / 2, rulerHeight / 2, 'centimeters', {
+            fontSize: '10px',
+            fill: '#8b4513',
+            fontStyle: 'italic'
+        }).setOrigin(0.5);
+        container.add(cmLabel);
 
         container.add(ruler);
 
@@ -692,19 +715,11 @@ class GeometryExplorer extends Phaser.Scene {
         });
 
         container.on('pointerover', () => {
-            ruler.clear();
-            ruler.fillStyle(0xF5E6C8);
-            ruler.fillRect(0, 0, rulerWidth, rulerHeight);
-            ruler.lineStyle(3, 0x8b4513);
-            ruler.strokeRect(0, 0, rulerWidth, rulerHeight);
+            drawRuler(ruler, 0xF5E6C8, 3);
         });
 
         container.on('pointerout', () => {
-            ruler.clear();
-            ruler.fillStyle(0xEDD5A8);
-            ruler.fillRect(0, 0, rulerWidth, rulerHeight);
-            ruler.lineStyle(2, 0x8b4513);
-            ruler.strokeRect(0, 0, rulerWidth, rulerHeight);
+            drawRuler(ruler, 0xEDD5A8, 2);
         });
 
         return { container, cmWidth };
@@ -714,48 +729,56 @@ class GeometryExplorer extends Phaser.Scene {
         const container = this.add.container(x, y);
         const radius = 120;
 
-        const protractor = this.add.graphics();
+        // Helper function to draw protractor
+        const drawProtractor = (graphics, bgColor, borderWidth) => {
+            graphics.clear();
 
-        // Semi-circle
-        protractor.fillStyle(0xEDD5A8, 0.9);
-        protractor.slice(0, 0, radius, Phaser.Math.DegToRad(180), Phaser.Math.DegToRad(0), true);
-        protractor.fillPath();
+            // Semi-circle
+            graphics.fillStyle(bgColor, 0.9);
+            graphics.slice(0, 0, radius, Phaser.Math.DegToRad(180), Phaser.Math.DegToRad(0), true);
+            graphics.fillPath();
 
-        protractor.lineStyle(2, 0x8b4513);
-        protractor.strokeCircle(0, 0, radius);
+            graphics.lineStyle(borderWidth, 0x8b4513);
+            graphics.strokeCircle(0, 0, radius);
 
-        // Degree markings
-        for (let angle = 0; angle <= 180; angle += 10) {
-            const rad = Phaser.Math.DegToRad(angle);
-            const x1 = radius * Math.cos(rad);
-            const y1 = -radius * Math.sin(rad);
+            // Degree markings
+            for (let angle = 0; angle <= 180; angle += 10) {
+                const rad = Phaser.Math.DegToRad(angle);
+                const x1 = radius * Math.cos(rad);
+                const y1 = -radius * Math.sin(rad);
 
-            const markLen = (angle % 30 === 0) ? 15 : 8;
-            const x2 = (radius - markLen) * Math.cos(rad);
-            const y2 = -(radius - markLen) * Math.sin(rad);
+                const markLen = (angle % 30 === 0) ? 15 : 8;
+                const x2 = (radius - markLen) * Math.cos(rad);
+                const y2 = -(radius - markLen) * Math.sin(rad);
 
-            protractor.lineStyle(1.5, 0x000000);
-            protractor.beginPath();
-            protractor.moveTo(x1, y1);
-            protractor.lineTo(x2, y2);
-            protractor.strokePath();
-
-            if (angle % 30 === 0) {
-                const textX = (radius - 30) * Math.cos(rad);
-                const textY = -(radius - 30) * Math.sin(rad);
-
-                const label = this.add.text(textX, textY, angle + '°', {
-                    fontSize: '12px',
-                    fill: '#000000',
-                    fontStyle: 'bold'
-                }).setOrigin(0.5);
-                container.add(label);
+                graphics.lineStyle(1.5, 0x000000);
+                graphics.beginPath();
+                graphics.moveTo(x1, y1);
+                graphics.lineTo(x2, y2);
+                graphics.strokePath();
             }
-        }
 
-        // Center dot
-        protractor.fillStyle(0xFF0000);
-        protractor.fillCircle(0, 0, 5);
+            // Center dot
+            graphics.fillStyle(0xFF0000);
+            graphics.fillCircle(0, 0, 5);
+        };
+
+        const protractor = this.add.graphics();
+        drawProtractor(protractor, 0xEDD5A8, 2);
+
+        // Degree labels
+        for (let angle = 0; angle <= 180; angle += 30) {
+            const rad = Phaser.Math.DegToRad(angle);
+            const textX = (radius - 30) * Math.cos(rad);
+            const textY = -(radius - 30) * Math.sin(rad);
+
+            const label = this.add.text(textX, textY, angle + '°', {
+                fontSize: '12px',
+                fill: '#000000',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+            container.add(label);
+        }
 
         container.add(protractor);
 
@@ -770,21 +793,11 @@ class GeometryExplorer extends Phaser.Scene {
         });
 
         container.on('pointerover', () => {
-            protractor.clear();
-            protractor.fillStyle(0xF5E6C8, 0.95);
-            protractor.slice(0, 0, radius, Phaser.Math.DegToRad(180), Phaser.Math.DegToRad(0), true);
-            protractor.fillPath();
-            protractor.lineStyle(3, 0x8b4513);
-            protractor.strokeCircle(0, 0, radius);
+            drawProtractor(protractor, 0xF5E6C8, 3);
         });
 
         container.on('pointerout', () => {
-            protractor.clear();
-            protractor.fillStyle(0xEDD5A8, 0.9);
-            protractor.slice(0, 0, radius, Phaser.Math.DegToRad(180), Phaser.Math.DegToRad(0), true);
-            protractor.fillPath();
-            protractor.lineStyle(2, 0x8b4513);
-            protractor.strokeCircle(0, 0, radius);
+            drawProtractor(protractor, 0xEDD5A8, 2);
         });
 
         return { container };
