@@ -25,37 +25,39 @@ class GeometryExplorer extends Phaser.Scene {
         // Background
         this.add.rectangle(width / 2, height / 2, width, height, 0x0a0a0a);
 
-        // Title bar
-        this.titleBar = this.add.rectangle(width / 2, 30, width, 60, 0x1a0f0a);
-        this.titleText = this.add.text(width / 2, 30, '', {
-            fontSize: '24px',
+        // Title bar at top
+        this.titleBar = this.add.rectangle(width / 2, 35, width - 20, 60, 0x1a0f0a);
+        this.titleBar.setStrokeStyle(2, 0x8b4513, 0.6);
+
+        this.titleText = this.add.text(width / 2, 35, '', {
+            fontSize: '26px',
             fill: '#d4a574',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        // Instruction panel
-        this.instructionPanel = this.add.rectangle(width / 2, 650, width - 40, 80, 0x1a0f0a);
-        this.instructionPanel.setStrokeStyle(2, 0x8b4513, 0.6);
-
-        this.instructionText = this.add.text(width / 2, 640, '', {
-            fontSize: '16px',
-            fill: '#c9b699',
-            align: 'center',
-            wordWrap: { width: width - 80 }
-        }).setOrigin(0.5, 0);
-
-        // Navigation buttons
-        this.prevButton = this.createButton(80, 650, 'Previous', () => this.previousLesson());
-        this.nextButton = this.createButton(width - 80, 650, 'Next', () => this.nextLesson());
-
-        // Lesson progress indicator
-        this.progressText = this.add.text(width / 2, 80, '', {
+        // Progress indicator
+        this.progressText = this.add.text(width / 2, 75, '', {
             fontSize: '14px',
             fill: '#c9b699'
         }).setOrigin(0.5);
 
-        // Main content area
+        // Main content area (larger, centered)
         this.contentArea = this.add.container(0, 0);
+
+        // Navigation buttons at bottom
+        this.prevButton = this.createButton(80, height - 40, 'Previous', () => this.previousLesson());
+        this.nextButton = this.createButton(width - 80, height - 40, 'Next', () => this.nextLesson());
+
+        // Instruction panel at bottom
+        this.instructionPanel = this.add.rectangle(width / 2, height - 40, width - 200, 60, 0x1a0f0a);
+        this.instructionPanel.setStrokeStyle(2, 0x8b4513, 0.6);
+
+        this.instructionText = this.add.text(width / 2, height - 50, '', {
+            fontSize: '15px',
+            fill: '#c9b699',
+            align: 'center',
+            wordWrap: { width: width - 220 }
+        }).setOrigin(0.5, 0);
 
         // Start with intro
         this.showLesson(0);
@@ -109,7 +111,9 @@ class GeometryExplorer extends Phaser.Scene {
 
         // Update button states
         this.prevButton.rect.setAlpha(index > 0 ? 1 : 0.3);
+        this.prevButton.text.setAlpha(index > 0 ? 1 : 0.3);
         this.nextButton.rect.setAlpha(index < this.lessons.length - 1 ? 1 : 0.3);
+        this.nextButton.text.setAlpha(index < this.lessons.length - 1 ? 1 : 0.3);
 
         // Show appropriate lesson
         const lessonName = this.lessons[index];
@@ -142,413 +146,318 @@ class GeometryExplorer extends Phaser.Scene {
     }
 
     showIntroLesson() {
-        this.titleText.setText('Welcome to Geometry Explorer!');
-        this.instructionText.setText('Click "Next" to begin your journey through lines, angles, and geometric concepts.');
+        this.titleText.setText('Welcome to Geometry!');
+        this.instructionText.setText('Explore lines, angles, and shapes. Click "Next" to begin.');
 
-        // Create a visual splash with geometric shapes
         const centerX = 500;
         const centerY = 350;
 
-        // Draw various geometric elements
-        const graphics = this.add.graphics();
-
-        // Line
-        graphics.lineStyle(3, 0x4CAF50);
-        graphics.beginPath();
-        graphics.moveTo(centerX - 200, centerY - 100);
-        graphics.lineTo(centerX - 50, centerY - 100);
-        graphics.strokePath();
-        this.add.text(centerX - 125, centerY - 130, 'Line', {
-            fontSize: '16px',
-            fill: '#4CAF50'
+        // Large welcome message
+        const welcome = this.add.text(centerX, 150, 'Learn Geometry Step by Step', {
+            fontSize: '28px',
+            fill: '#d4a574',
+            fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        // Ray
-        graphics.lineStyle(3, 0x2196F3);
-        graphics.beginPath();
-        graphics.moveTo(centerX + 50, centerY - 100);
-        graphics.lineTo(centerX + 200, centerY - 100);
-        graphics.strokePath();
-        graphics.fillStyle(0x2196F3);
-        graphics.fillCircle(centerX + 50, centerY - 100, 5);
-        this.add.text(centerX + 125, centerY - 130, 'Ray', {
-            fontSize: '16px',
-            fill: '#2196F3'
-        }).setOrigin(0.5);
+        // Topics covered
+        const topics = [
+            '📏 Lines, Segments & Rays',
+            '📐 Types of Angles',
+            '📊 Using Tools (Ruler & Protractor)',
+            '↔️ Parallel & Intersecting Lines',
+            '🔄 Complementary & Supplementary Angles',
+            '⚫ Collinear Points'
+        ];
 
-        // Angle
-        graphics.lineStyle(3, 0xFF9800);
-        graphics.beginPath();
-        graphics.moveTo(centerX - 200, centerY + 50);
-        graphics.lineTo(centerX - 100, centerY + 50);
-        graphics.lineTo(centerX - 50, centerY - 50);
-        graphics.strokePath();
-        graphics.lineStyle(2, 0xFF9800);
-        graphics.arc(centerX - 100, centerY + 50, 30, Phaser.Math.DegToRad(270), Phaser.Math.DegToRad(315));
-        graphics.strokePath();
-        this.add.text(centerX - 125, centerY + 80, 'Angle', {
-            fontSize: '16px',
-            fill: '#FF9800'
-        }).setOrigin(0.5);
+        topics.forEach((topic, index) => {
+            const topicText = this.add.text(centerX, 230 + index * 50, topic, {
+                fontSize: '20px',
+                fill: '#c9b699'
+            }).setOrigin(0.5);
+            this.contentArea.add(topicText);
+        });
 
-        // Parallel lines
-        graphics.lineStyle(3, 0x9C27B0);
-        graphics.beginPath();
-        graphics.moveTo(centerX + 50, centerY);
-        graphics.lineTo(centerX + 200, centerY);
-        graphics.moveTo(centerX + 50, centerY + 50);
-        graphics.lineTo(centerX + 200, centerY + 50);
-        graphics.strokePath();
-        this.add.text(centerX + 125, centerY + 80, 'Parallel Lines', {
-            fontSize: '16px',
-            fill: '#9C27B0'
-        }).setOrigin(0.5);
-
-        this.contentArea.add(graphics);
+        this.contentArea.add(welcome);
     }
 
     showLinesLesson() {
-        this.titleText.setText('Lines, Line Segments, and Rays');
-        this.instructionText.setText('Learn the differences: Lines extend infinitely, segments have two endpoints, and rays have one endpoint.');
+        this.titleText.setText('Lines, Line Segments & Rays');
+        this.instructionText.setText('Learn the differences between these three fundamental concepts in geometry.');
 
-        const startX = 150;
         const startY = 150;
-        const spacing = 150;
+        const spacing = 170;
 
-        // Line
-        this.drawLineExample(startX, startY, 'LINE',
-            'Extends infinitely in both directions',
+        // LINE
+        const line = this.createLineDemo(500, startY,
+            'LINE',
+            'Extends forever in both directions →  ←',
             'line', 0x4CAF50);
+        this.contentArea.add(line);
 
-        // Line Segment
-        this.drawLineExample(startX + 300, startY, 'LINE SEGMENT',
-            'Has two endpoints: A and B',
+        // LINE SEGMENT
+        const segment = this.createLineDemo(500, startY + spacing,
+            'LINE SEGMENT',
+            'Has two endpoints A and B',
             'segment', 0x2196F3);
+        this.contentArea.add(segment);
 
-        // Ray
-        this.drawLineExample(startX + 600, startY, 'RAY',
-            'Starts at one point, extends infinitely',
+        // RAY
+        const ray = this.createLineDemo(500, startY + spacing * 2,
+            'RAY',
+            'Starts at point A, extends forever →',
             'ray', 0xFF9800);
-
-        // Interactive drawing area
-        const drawArea = this.add.rectangle(500, 450, 800, 200, 0x1a0f0a);
-        drawArea.setStrokeStyle(2, 0x8b4513, 0.6);
-
-        const drawText = this.add.text(500, 360, 'Click to draw your own line!', {
-            fontSize: '18px',
-            fill: '#d4a574'
-        }).setOrigin(0.5);
-
-        this.contentArea.add([drawArea, drawText]);
-
-        this.setupInteractiveDrawing(100, 400, 900, 600);
+        this.contentArea.add(ray);
     }
 
-    drawLineExample(x, y, title, description, type, color) {
-        const graphics = this.add.graphics();
+    createLineDemo(x, y, title, description, type, color) {
+        const container = this.add.container(x, y);
 
         // Title
-        const titleText = this.add.text(x, y - 30, title, {
-            fontSize: '18px',
+        const titleText = this.add.text(0, -40, title, {
+            fontSize: '22px',
             fill: '#d4a574',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
         // Description
-        const descText = this.add.text(x, y + 100, description, {
-            fontSize: '14px',
-            fill: '#c9b699',
-            align: 'center',
-            wordWrap: { width: 200 }
-        }).setOrigin(0.5, 0);
+        const descText = this.add.text(0, 60, description, {
+            fontSize: '16px',
+            fill: '#c9b699'
+        }).setOrigin(0.5);
 
+        const graphics = this.add.graphics();
         graphics.lineStyle(4, color);
 
         if (type === 'line') {
-            // Line with arrows on both ends
+            // Line with arrows
             graphics.beginPath();
-            graphics.moveTo(x - 80, y + 30);
-            graphics.lineTo(x + 80, y + 30);
+            graphics.moveTo(-200, 0);
+            graphics.lineTo(200, 0);
             graphics.strokePath();
 
             // Arrows
-            this.drawArrow(graphics, x - 80, y + 30, -1, color);
-            this.drawArrow(graphics, x + 80, y + 30, 1, color);
+            graphics.fillStyle(color);
+            graphics.fillTriangle(-200, 0, -185, -7, -185, 7);
+            graphics.fillTriangle(200, 0, 185, -7, 185, 7);
 
         } else if (type === 'segment') {
-            // Segment with endpoints
+            // Segment with dots
             graphics.beginPath();
-            graphics.moveTo(x - 80, y + 30);
-            graphics.lineTo(x + 80, y + 30);
+            graphics.moveTo(-150, 0);
+            graphics.lineTo(150, 0);
             graphics.strokePath();
 
-            // Endpoints
             graphics.fillStyle(color);
-            graphics.fillCircle(x - 80, y + 30, 6);
-            graphics.fillCircle(x + 80, y + 30, 6);
+            graphics.fillCircle(-150, 0, 8);
+            graphics.fillCircle(150, 0, 8);
 
-            // Labels
-            this.add.text(x - 80, y + 50, 'A', { fontSize: '16px', fill: '#d4a574' }).setOrigin(0.5);
-            this.add.text(x + 80, y + 50, 'B', { fontSize: '16px', fill: '#d4a574' }).setOrigin(0.5);
+            const labelA = this.add.text(-150, 20, 'A', { fontSize: '18px', fill: '#d4a574' }).setOrigin(0.5);
+            const labelB = this.add.text(150, 20, 'B', { fontSize: '18px', fill: '#d4a574' }).setOrigin(0.5);
+            container.add([labelA, labelB]);
 
         } else if (type === 'ray') {
-            // Ray with one endpoint and one arrow
+            // Ray with one dot and arrow
             graphics.beginPath();
-            graphics.moveTo(x - 80, y + 30);
-            graphics.lineTo(x + 80, y + 30);
+            graphics.moveTo(-150, 0);
+            graphics.lineTo(200, 0);
             graphics.strokePath();
 
-            // Starting point
             graphics.fillStyle(color);
-            graphics.fillCircle(x - 80, y + 30, 6);
+            graphics.fillCircle(-150, 0, 8);
+            graphics.fillTriangle(200, 0, 185, -7, 185, 7);
 
-            // Arrow
-            this.drawArrow(graphics, x + 80, y + 30, 1, color);
-
-            // Label
-            this.add.text(x - 80, y + 50, 'A', { fontSize: '16px', fill: '#d4a574' }).setOrigin(0.5);
+            const labelA = this.add.text(-150, 20, 'A', { fontSize: '18px', fill: '#d4a574' }).setOrigin(0.5);
+            container.add(labelA);
         }
 
-        this.contentArea.add([titleText, descText, graphics]);
-    }
-
-    drawArrow(graphics, x, y, direction, color) {
-        graphics.fillStyle(color);
-        graphics.fillTriangle(
-            x + (direction * 10), y,
-            x + (direction * -5), y - 5,
-            x + (direction * -5), y + 5
-        );
-    }
-
-    setupInteractiveDrawing(x1, y1, x2, y2) {
-        let isDrawing = false;
-        let startPoint = null;
-        let currentLine = null;
-
-        const drawGraphics = this.add.graphics();
-        this.contentArea.add(drawGraphics);
-
-        this.input.on('pointerdown', (pointer) => {
-            if (pointer.x >= x1 && pointer.x <= x2 && pointer.y >= y1 && pointer.y <= y2) {
-                isDrawing = true;
-                startPoint = { x: pointer.x, y: pointer.y };
-            }
-        });
-
-        this.input.on('pointermove', (pointer) => {
-            if (isDrawing && startPoint) {
-                drawGraphics.clear();
-                drawGraphics.lineStyle(3, 0xd4a574);
-                drawGraphics.beginPath();
-                drawGraphics.moveTo(startPoint.x, startPoint.y);
-                drawGraphics.lineTo(pointer.x, pointer.y);
-                drawGraphics.strokePath();
-            }
-        });
-
-        this.input.on('pointerup', (pointer) => {
-            if (isDrawing) {
-                isDrawing = false;
-                startPoint = null;
-            }
-        });
+        container.add([titleText, descText, graphics]);
+        return container;
     }
 
     showAnglesLesson() {
         this.titleText.setText('Types of Angles');
-        this.instructionText.setText('Angles are measured in degrees. Learn to identify acute, right, obtuse, and straight angles.');
+        this.instructionText.setText('Angles are measured in degrees (°). Learn to identify each type.');
 
         const angles = [
-            { name: 'ACUTE', degrees: 45, desc: 'Less than 90°', color: 0x4CAF50 },
-            { name: 'RIGHT', degrees: 90, desc: 'Exactly 90°', color: 0x2196F3 },
-            { name: 'OBTUSE', degrees: 120, desc: 'Between 90° and 180°', color: 0xFF9800 },
-            { name: 'STRAIGHT', degrees: 180, desc: 'Exactly 180°', color: 0x9C27B0 }
+            { name: 'ACUTE', degrees: 45, desc: '< 90°', color: 0x4CAF50, x: 250, y: 200 },
+            { name: 'RIGHT', degrees: 90, desc: '= 90°', color: 0x2196F3, x: 750, y: 200 },
+            { name: 'OBTUSE', degrees: 135, desc: '> 90°, < 180°', color: 0xFF9800, x: 250, y: 450 },
+            { name: 'STRAIGHT', degrees: 180, desc: '= 180°', color: 0x9C27B0, x: 750, y: 450 }
         ];
 
-        const startX = 200;
-        const startY = 200;
-        const spacingX = 400;
-
-        angles.forEach((angle, index) => {
-            const x = startX + (index % 2) * spacingX;
-            const y = startY + Math.floor(index / 2) * 250;
-
-            this.drawAngleExample(x, y, angle.name, angle.degrees, angle.desc, angle.color);
+        angles.forEach(angle => {
+            const container = this.drawAngle(angle.x, angle.y, angle.name, angle.degrees, angle.desc, angle.color);
+            this.contentArea.add(container);
         });
     }
 
-    drawAngleExample(x, y, name, degrees, description, color) {
-        const graphics = this.add.graphics();
+    drawAngle(x, y, name, degrees, description, color) {
+        const container = this.add.container(x, y);
 
-        // Title
-        const titleText = this.add.text(x, y - 40, name, {
-            fontSize: '18px',
+        // Title and degree
+        const title = this.add.text(0, -80, name, {
+            fontSize: '20px',
             fill: '#d4a574',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        // Degree text
-        const degreeText = this.add.text(x, y - 20, `${degrees}°`, {
-            fontSize: '16px',
-            fill: color.toString(16).padStart(6, '0')
+        const degText = this.add.text(0, -55, `${degrees}°`, {
+            fontSize: '24px',
+            fill: '#' + color.toString(16).padStart(6, '0')
         }).setOrigin(0.5);
 
-        // Description
-        const descText = this.add.text(x, y + 100, description, {
-            fontSize: '14px',
+        const descText = this.add.text(0, 70, description, {
+            fontSize: '16px',
             fill: '#c9b699'
         }).setOrigin(0.5);
 
         // Draw angle
+        const graphics = this.add.graphics();
         const length = 80;
+
         graphics.lineStyle(4, color);
 
-        // Horizontal line
+        // Base line (horizontal)
         graphics.beginPath();
-        graphics.moveTo(x - length, y + 30);
-        graphics.lineTo(x, y + 30);
+        graphics.moveTo(-length, 0);
+        graphics.lineTo(0, 0);
         graphics.strokePath();
 
         // Angled line
         const radians = Phaser.Math.DegToRad(degrees);
-        const endX = x + length * Math.cos(Math.PI - radians);
-        const endY = y + 30 - length * Math.sin(Math.PI - radians);
+        const endX = length * Math.cos(Math.PI - radians);
+        const endY = -length * Math.sin(Math.PI - radians);
 
         graphics.beginPath();
-        graphics.moveTo(x, y + 30);
+        graphics.moveTo(0, 0);
         graphics.lineTo(endX, endY);
         graphics.strokePath();
 
-        // Arc showing angle
-        graphics.lineStyle(2, color, 0.7);
+        // Arc
+        graphics.lineStyle(2, color);
         graphics.beginPath();
-        graphics.arc(x, y + 30, 25, -radians, 0);
+        graphics.arc(0, 0, 30, -radians, 0);
         graphics.strokePath();
 
         // Vertex point
         graphics.fillStyle(color);
-        graphics.fillCircle(x, y + 30, 5);
+        graphics.fillCircle(0, 0, 6);
 
-        // Right angle square if needed
+        // Right angle marker
         if (degrees === 90) {
             graphics.lineStyle(2, color);
-            graphics.strokeRect(x - 15, y + 15, 15, 15);
+            graphics.strokeRect(-15, -15, 15, 15);
         }
 
-        this.contentArea.add([titleText, degreeText, descText, graphics]);
+        container.add([title, degText, descText, graphics]);
+        return container;
     }
 
     showRulerLesson() {
         this.titleText.setText('Using a Ruler');
-        this.instructionText.setText('Measure line segments accurately using a ruler. Each mark represents a unit.');
+        this.instructionText.setText('A ruler measures length. Each small mark is 1 cm.');
 
-        // Draw an interactive ruler
-        const ruler = this.add.graphics();
+        // Draw ruler
         const rulerX = 150;
-        const rulerY = 250;
+        const rulerY = 200;
         const rulerWidth = 700;
-        const rulerHeight = 60;
+        const rulerHeight = 80;
 
-        // Ruler body
-        ruler.fillStyle(0xf4e4c1);
+        const ruler = this.add.graphics();
+
+        // Ruler background
+        ruler.fillStyle(0xEDD5A8);
         ruler.fillRect(rulerX, rulerY, rulerWidth, rulerHeight);
-        ruler.lineStyle(2, 0x8b4513);
+        ruler.lineStyle(3, 0x8b4513);
         ruler.strokeRect(rulerX, rulerY, rulerWidth, rulerHeight);
 
-        // Measurement marks
-        const units = 14;
-        const unitWidth = rulerWidth / units;
+        // Marks
+        const cmCount = 14;
+        const cmWidth = rulerWidth / cmCount;
 
-        for (let i = 0; i <= units; i++) {
-            const x = rulerX + i * unitWidth;
-            const markHeight = (i % 5 === 0) ? 30 : (i % 2 === 0) ? 20 : 15;
+        for (let i = 0; i <= cmCount; i++) {
+            const x = rulerX + i * cmWidth;
+            const markHeight = 40;
 
             ruler.lineStyle(2, 0x000000);
             ruler.beginPath();
-            ruler.moveTo(x, rulerY);
-            ruler.lineTo(x, rulerY + markHeight);
+            ruler.moveTo(x, rulerY + 5);
+            ruler.lineTo(x, rulerY + 5 + markHeight);
             ruler.strokePath();
 
-            if (i % 2 === 0) {
-                this.add.text(x, rulerY + rulerHeight - 20, i.toString(), {
-                    fontSize: '12px',
-                    fill: '#000000'
-                }).setOrigin(0.5);
-            }
+            const label = this.add.text(x, rulerY + rulerHeight - 25, i.toString(), {
+                fontSize: '16px',
+                fill: '#000000',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+            this.contentArea.add(label);
         }
 
-        this.add.text(500, 350, 'Unit: cm', {
-            fontSize: '16px',
+        const unitLabel = this.add.text(rulerX + rulerWidth / 2, rulerY + rulerHeight + 30, 'centimeters (cm)', {
+            fontSize: '18px',
             fill: '#d4a574'
         }).setOrigin(0.5);
 
-        this.contentArea.add(ruler);
-
-        // Sample line segments to measure
-        const sampleY = 450;
-        const sampleLines = [
-            { length: 150, label: 'Measure me!' },
-            { length: 250, label: 'How long am I?' },
-            { length: 350, label: 'What\'s my length?' }
+        // Sample measurements
+        const samples = [
+            { length: 200, label: 'Line AB' },
+            { length: 350, label: 'Line CD' },
+            { length: 500, label: 'Line EF' }
         ];
 
-        sampleLines.forEach((line, index) => {
-            const graphics = this.add.graphics();
-            const y = sampleY + index * 50;
+        samples.forEach((sample, i) => {
+            const y = 350 + i * 60;
+            const lineGraphics = this.add.graphics();
 
-            graphics.lineStyle(3, 0x4CAF50);
-            graphics.beginPath();
-            graphics.moveTo(rulerX, y);
-            graphics.lineTo(rulerX + line.length, y);
-            graphics.strokePath();
+            lineGraphics.lineStyle(3, 0x4CAF50);
+            lineGraphics.beginPath();
+            lineGraphics.moveTo(rulerX, y);
+            lineGraphics.lineTo(rulerX + sample.length, y);
+            lineGraphics.strokePath();
 
-            graphics.fillStyle(0x4CAF50);
-            graphics.fillCircle(rulerX, y, 5);
-            graphics.fillCircle(rulerX + line.length, y, 5);
+            lineGraphics.fillStyle(0x4CAF50);
+            lineGraphics.fillCircle(rulerX, y, 6);
+            lineGraphics.fillCircle(rulerX + sample.length, y, 6);
 
-            this.add.text(rulerX + line.length + 20, y, line.label, {
-                fontSize: '14px',
+            const length = (sample.length / cmWidth).toFixed(1);
+            const label = this.add.text(rulerX + sample.length + 20, y, `${sample.label} = ${length} cm`, {
+                fontSize: '16px',
                 fill: '#c9b699'
             }).setOrigin(0, 0.5);
 
-            // Answer (length in cm)
-            const lengthCm = (line.length / unitWidth).toFixed(1);
-            this.add.text(rulerX + line.length + 150, y, `(${lengthCm} cm)`, {
-                fontSize: '12px',
-                fill: '#d4a574'
-            }).setOrigin(0, 0.5);
-
-            this.contentArea.add(graphics);
+            this.contentArea.add([lineGraphics, label]);
         });
+
+        this.contentArea.add([ruler, unitLabel]);
     }
 
     showProtractorLesson() {
         this.titleText.setText('Using a Protractor');
-        this.instructionText.setText('Measure angles accurately using a protractor. Place the center on the vertex and align one ray with 0°.');
+        this.instructionText.setText('A protractor measures angles in degrees. Place center on vertex, align with 0°.');
 
-        // Draw a protractor
         const centerX = 500;
         const centerY = 300;
-        const radius = 150;
+        const radius = 140;
 
         const protractor = this.add.graphics();
 
-        // Protractor semicircle
-        protractor.fillStyle(0xf4e4c1, 0.7);
-        protractor.fillCircle(centerX, centerY, radius);
-        protractor.lineStyle(2, 0x8b4513);
+        // Protractor body
+        protractor.fillStyle(0xEDD5A8, 0.8);
+        protractor.slice(centerX, centerY, radius, Phaser.Math.DegToRad(180), Phaser.Math.DegToRad(0), true);
+        protractor.fillPath();
+
+        protractor.lineStyle(3, 0x8b4513);
         protractor.strokeCircle(centerX, centerY, radius);
 
-        // Draw degree markings
+        // Degree markings
         for (let angle = 0; angle <= 180; angle += 10) {
-            const radians = Phaser.Math.DegToRad(angle);
-            const x1 = centerX + radius * Math.cos(radians);
-            const y1 = centerY - radius * Math.sin(radians);
+            const rad = Phaser.Math.DegToRad(angle);
+            const x1 = centerX + radius * Math.cos(rad);
+            const y1 = centerY - radius * Math.sin(rad);
 
-            const markLength = (angle % 30 === 0) ? 15 : 10;
-            const x2 = centerX + (radius - markLength) * Math.cos(radians);
-            const y2 = centerY - (radius - markLength) * Math.sin(radians);
+            const markLen = (angle % 30 === 0) ? 20 : 12;
+            const x2 = centerX + (radius - markLen) * Math.cos(rad);
+            const y2 = centerY - (radius - markLen) * Math.sin(rad);
 
             protractor.lineStyle(2, 0x000000);
             protractor.beginPath();
@@ -557,450 +466,322 @@ class GeometryExplorer extends Phaser.Scene {
             protractor.strokePath();
 
             if (angle % 30 === 0) {
-                const textX = centerX + (radius - 30) * Math.cos(radians);
-                const textY = centerY - (radius - 30) * Math.sin(radians);
+                const textX = centerX + (radius - 35) * Math.cos(rad);
+                const textY = centerY - (radius - 35) * Math.sin(rad);
 
-                this.add.text(textX, textY, angle.toString() + '°', {
-                    fontSize: '12px',
-                    fill: '#000000'
+                const degLabel = this.add.text(textX, textY, angle + '°', {
+                    fontSize: '14px',
+                    fill: '#000000',
+                    fontStyle: 'bold'
                 }).setOrigin(0.5);
+                this.contentArea.add(degLabel);
             }
         }
 
-        // Center point
+        // Center mark
         protractor.fillStyle(0xFF0000);
-        protractor.fillCircle(centerX, centerY, 5);
+        protractor.fillCircle(centerX, centerY, 6);
 
-        this.add.text(centerX, centerY + 180, 'Center on vertex', {
-            fontSize: '14px',
-            fill: '#d4a574'
-        }).setOrigin(0.5);
-
-        this.contentArea.add(protractor);
-
-        // Sample angle to measure
+        // Example angle to measure
         const sampleAngle = 60;
-        const graphics = this.add.graphics();
+        const sampleGraphics = this.add.graphics();
 
-        graphics.lineStyle(4, 0xFF9800);
-        graphics.beginPath();
-        graphics.moveTo(centerX + radius - 20, centerY);
-        graphics.lineTo(centerX, centerY);
-        graphics.strokePath();
+        sampleGraphics.lineStyle(5, 0xFF9800);
 
-        const radians = Phaser.Math.DegToRad(sampleAngle);
-        graphics.beginPath();
-        graphics.moveTo(centerX, centerY);
-        graphics.lineTo(
-            centerX + (radius - 20) * Math.cos(radians),
-            centerY - (radius - 20) * Math.sin(radians)
-        );
-        graphics.strokePath();
+        // Base line
+        sampleGraphics.beginPath();
+        sampleGraphics.moveTo(centerX, centerY);
+        sampleGraphics.lineTo(centerX + 120, centerY);
+        sampleGraphics.strokePath();
 
-        this.add.text(centerX, 500, `This angle measures ${sampleAngle}°`, {
-            fontSize: '18px',
-            fill: '#d4a574'
+        // Angled line
+        const rad = Phaser.Math.DegToRad(sampleAngle);
+        sampleGraphics.beginPath();
+        sampleGraphics.moveTo(centerX, centerY);
+        sampleGraphics.lineTo(centerX + 120 * Math.cos(rad), centerY - 120 * Math.sin(rad));
+        sampleGraphics.strokePath();
+
+        const resultText = this.add.text(centerX, 500, `This angle measures ${sampleAngle}°`, {
+            fontSize: '22px',
+            fill: '#d4a574',
+            fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        this.contentArea.add(graphics);
+        this.contentArea.add([protractor, sampleGraphics, resultText]);
     }
 
     showParallelLinesLesson() {
-        this.titleText.setText('Parallel and Intersecting Lines');
+        this.titleText.setText('Parallel & Intersecting Lines');
         this.instructionText.setText('Parallel lines never meet. Intersecting lines cross at a point.');
 
-        // Parallel lines example
-        const graphics1 = this.add.graphics();
-        const x1 = 250;
-        const y1 = 200;
+        // Left side - Parallel
+        const parallel = this.add.container(250, 300);
 
-        this.add.text(x1, y1 - 40, 'PARALLEL LINES', {
-            fontSize: '18px',
-            fill: '#d4a574',
+        const parallelTitle = this.add.text(0, -120, 'PARALLEL LINES', {
+            fontSize: '22px',
+            fill: '#4CAF50',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        graphics1.lineStyle(4, 0x4CAF50);
-        graphics1.beginPath();
-        graphics1.moveTo(x1 - 100, y1);
-        graphics1.lineTo(x1 + 100, y1);
-        graphics1.strokePath();
+        const parallelGraphics = this.add.graphics();
+        parallelGraphics.lineStyle(5, 0x4CAF50);
 
-        graphics1.beginPath();
-        graphics1.moveTo(x1 - 100, y1 + 50);
-        graphics1.lineTo(x1 + 100, y1 + 50);
-        graphics1.strokePath();
+        parallelGraphics.beginPath();
+        parallelGraphics.moveTo(-120, -30);
+        parallelGraphics.lineTo(120, -30);
+        parallelGraphics.strokePath();
+
+        parallelGraphics.beginPath();
+        parallelGraphics.moveTo(-120, 30);
+        parallelGraphics.lineTo(120, 30);
+        parallelGraphics.strokePath();
 
         // Parallel symbol
-        graphics1.lineStyle(2, 0x4CAF50);
-        graphics1.beginPath();
-        graphics1.moveTo(x1 - 10, y1 + 15);
-        graphics1.lineTo(x1 + 10, y1 + 15);
-        graphics1.moveTo(x1 - 10, y1 + 20);
-        graphics1.lineTo(x1 + 10, y1 + 20);
-        graphics1.strokePath();
+        parallelGraphics.lineStyle(3, 0x4CAF50);
+        parallelGraphics.beginPath();
+        parallelGraphics.moveTo(-15, -10);
+        parallelGraphics.lineTo(15, -10);
+        parallelGraphics.moveTo(-15, -5);
+        parallelGraphics.lineTo(15, -5);
+        parallelGraphics.strokePath();
 
-        this.add.text(x1, y1 + 100, 'These lines will never intersect.\nThey are always the same distance apart.', {
-            fontSize: '14px',
+        const parallelDesc = this.add.text(0, 90, 'Never intersect\nAlways same distance', {
+            fontSize: '16px',
             fill: '#c9b699',
             align: 'center'
         }).setOrigin(0.5);
 
-        // Intersecting lines example
-        const graphics2 = this.add.graphics();
-        const x2 = 750;
-        const y2 = 200;
+        parallel.add([parallelTitle, parallelGraphics, parallelDesc]);
 
-        this.add.text(x2, y2 - 40, 'INTERSECTING LINES', {
-            fontSize: '18px',
-            fill: '#d4a574',
+        // Right side - Intersecting
+        const intersecting = this.add.container(750, 300);
+
+        const intersectTitle = this.add.text(0, -120, 'INTERSECTING LINES', {
+            fontSize: '22px',
+            fill: '#2196F3',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        graphics2.lineStyle(4, 0x2196F3);
-        graphics2.beginPath();
-        graphics2.moveTo(x2 - 100, y2);
-        graphics2.lineTo(x2 + 100, y2 + 80);
-        graphics2.strokePath();
+        const intersectGraphics = this.add.graphics();
+        intersectGraphics.lineStyle(5, 0x2196F3);
 
-        graphics2.beginPath();
-        graphics2.moveTo(x2 - 80, y2 + 80);
-        graphics2.lineTo(x2 + 120, y2);
-        graphics2.strokePath();
+        intersectGraphics.beginPath();
+        intersectGraphics.moveTo(-100, -50);
+        intersectGraphics.lineTo(100, 50);
+        intersectGraphics.strokePath();
+
+        intersectGraphics.beginPath();
+        intersectGraphics.moveTo(-100, 50);
+        intersectGraphics.lineTo(100, -50);
+        intersectGraphics.strokePath();
 
         // Intersection point
-        graphics2.fillStyle(0xFF0000);
-        graphics2.fillCircle(x2 + 10, y2 + 40, 6);
+        intersectGraphics.fillStyle(0xFF0000);
+        intersectGraphics.fillCircle(0, 0, 8);
 
-        this.add.text(x2 + 10, y2 + 60, 'Intersection Point', {
-            fontSize: '12px',
-            fill: '#FF0000'
-        }).setOrigin(0.5, 0);
-
-        this.add.text(x2, y2 + 100, 'These lines cross at one point.', {
-            fontSize: '14px',
+        const intersectDesc = this.add.text(0, 90, 'Cross at one point', {
+            fontSize: '16px',
             fill: '#c9b699',
             align: 'center'
         }).setOrigin(0.5);
 
-        // Perpendicular lines example
-        const graphics3 = this.add.graphics();
-        const x3 = 500;
-        const y3 = 450;
+        intersecting.add([intersectTitle, intersectGraphics, intersectDesc]);
 
-        this.add.text(x3, y3 - 40, 'PERPENDICULAR LINES', {
-            fontSize: '18px',
-            fill: '#d4a574',
-            fontStyle: 'bold'
-        }).setOrigin(0.5);
-
-        graphics3.lineStyle(4, 0xFF9800);
-        graphics3.beginPath();
-        graphics3.moveTo(x3 - 100, y3);
-        graphics3.lineTo(x3 + 100, y3);
-        graphics3.strokePath();
-
-        graphics3.beginPath();
-        graphics3.moveTo(x3, y3 - 80);
-        graphics3.lineTo(x3, y3 + 80);
-        graphics3.strokePath();
-
-        // Right angle square
-        graphics3.lineStyle(2, 0xFF9800);
-        graphics3.strokeRect(x3 - 15, y3 - 15, 15, 15);
-
-        this.add.text(x3, y3 + 100, 'Perpendicular lines intersect at 90°', {
-            fontSize: '14px',
-            fill: '#c9b699',
-            align: 'center'
-        }).setOrigin(0.5);
-
-        this.contentArea.add([graphics1, graphics2, graphics3]);
+        this.contentArea.add([parallel, intersecting]);
     }
 
     showComplementaryAnglesLesson() {
-        this.titleText.setText('Complementary and Supplementary Angles');
-        this.instructionText.setText('Complementary angles add up to 90°. Supplementary angles add up to 180°.');
+        this.titleText.setText('Complementary & Supplementary Angles');
+        this.instructionText.setText('Complementary add to 90°. Supplementary add to 180°.');
 
-        // Complementary angles
-        const x1 = 300;
-        const y1 = 250;
+        // Left - Complementary
+        const compX = 280;
+        const compY = 300;
 
-        this.add.text(x1, y1 - 60, 'COMPLEMENTARY ANGLES', {
-            fontSize: '18px',
-            fill: '#d4a574',
+        const compTitle = this.add.text(compX, 140, 'COMPLEMENTARY', {
+            fontSize: '22px',
+            fill: '#4CAF50',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        this.add.text(x1, y1 - 35, '(Add up to 90°)', {
-            fontSize: '14px',
+        const compSubtitle = this.add.text(compX, 170, '(Add to 90°)', {
+            fontSize: '16px',
             fill: '#c9b699'
         }).setOrigin(0.5);
 
-        const graphics1 = this.add.graphics();
+        const compGraphics = this.add.graphics();
 
-        // First angle (60°)
-        graphics1.lineStyle(4, 0x4CAF50);
-        graphics1.beginPath();
-        graphics1.moveTo(x1 - 100, y1);
-        graphics1.lineTo(x1, y1);
-        graphics1.lineTo(x1 + 50, y1 - 87);
-        graphics1.strokePath();
+        // 60° angle
+        compGraphics.lineStyle(5, 0x4CAF50);
+        compGraphics.beginPath();
+        compGraphics.moveTo(compX - 100, compY);
+        compGraphics.lineTo(compX, compY);
+        compGraphics.strokePath();
 
-        graphics1.lineStyle(2, 0x4CAF50, 0.7);
-        graphics1.arc(x1, y1, 30, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(-30));
-        graphics1.strokePath();
+        const rad60 = Phaser.Math.DegToRad(60);
+        compGraphics.beginPath();
+        compGraphics.moveTo(compX, compY);
+        compGraphics.lineTo(compX + 100 * Math.cos(rad60), compY - 100 * Math.sin(rad60));
+        compGraphics.strokePath();
 
-        this.add.text(x1 + 15, y1 - 25, '60°', {
-            fontSize: '16px',
-            fill: '#4CAF50'
-        });
+        // 30° angle
+        compGraphics.lineStyle(5, 0x2196F3);
+        const rad30 = Phaser.Math.DegToRad(30);
+        compGraphics.beginPath();
+        compGraphics.moveTo(compX + 100 * Math.cos(rad60), compY - 100 * Math.sin(rad60));
+        compGraphics.lineTo(compX, compY);
+        compGraphics.lineTo(compX, compY - 100);
+        compGraphics.strokePath();
 
-        // Second angle (30°)
-        graphics1.lineStyle(4, 0x2196F3);
-        graphics1.beginPath();
-        graphics1.moveTo(x1 + 50, y1 - 87);
-        graphics1.lineTo(x1, y1);
-        graphics1.lineTo(x1, y1 - 100);
-        graphics1.strokePath();
+        const comp60Label = this.add.text(compX - 40, compY - 25, '60°', { fontSize: '18px', fill: '#4CAF50' });
+        const comp30Label = this.add.text(compX + 15, compY - 60, '30°', { fontSize: '18px', fill: '#2196F3' });
 
-        graphics1.lineStyle(2, 0x2196F3, 0.7);
-        graphics1.arc(x1, y1, 40, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(-60));
-        graphics1.strokePath();
-
-        this.add.text(x1 - 25, y1 - 45, '30°', {
-            fontSize: '16px',
-            fill: '#2196F3'
-        });
-
-        this.add.text(x1, y1 + 40, '60° + 30° = 90°', {
-            fontSize: '16px',
-            fill: '#d4a574'
-        }).setOrigin(0.5);
-
-        // Supplementary angles
-        const x2 = 700;
-        const y2 = 250;
-
-        this.add.text(x2, y2 - 60, 'SUPPLEMENTARY ANGLES', {
-            fontSize: '18px',
+        const compFormula = this.add.text(compX, compY + 100, '60° + 30° = 90°', {
+            fontSize: '20px',
             fill: '#d4a574',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        this.add.text(x2, y2 - 35, '(Add up to 180°)', {
-            fontSize: '14px',
+        // Right - Supplementary
+        const suppX = 720;
+        const suppY = 300;
+
+        const suppTitle = this.add.text(suppX, 140, 'SUPPLEMENTARY', {
+            fontSize: '22px',
+            fill: '#FF9800',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        const suppSubtitle = this.add.text(suppX, 170, '(Add to 180°)', {
+            fontSize: '16px',
             fill: '#c9b699'
         }).setOrigin(0.5);
 
-        const graphics2 = this.add.graphics();
+        const suppGraphics = this.add.graphics();
+        suppGraphics.lineStyle(5, 0xFF9800);
 
-        // First angle (120°)
-        graphics2.lineStyle(4, 0xFF9800);
-        graphics2.beginPath();
-        graphics2.moveTo(x2 - 100, y2);
-        graphics2.lineTo(x2, y2);
-        graphics2.lineTo(x2 - 50, y2 - 87);
-        graphics2.strokePath();
+        // 120° angle
+        suppGraphics.beginPath();
+        suppGraphics.moveTo(suppX - 120, suppY);
+        suppGraphics.lineTo(suppX, suppY);
+        suppGraphics.strokePath();
 
-        graphics2.lineStyle(2, 0xFF9800, 0.7);
-        graphics2.arc(x2, y2, 30, Phaser.Math.DegToRad(-180), Phaser.Math.DegToRad(-60));
-        graphics2.strokePath();
+        const rad120 = Phaser.Math.DegToRad(120);
+        suppGraphics.beginPath();
+        suppGraphics.moveTo(suppX, suppY);
+        suppGraphics.lineTo(suppX + 100 * Math.cos(rad120), suppY - 100 * Math.sin(rad120));
+        suppGraphics.strokePath();
 
-        this.add.text(x2 - 35, y2 - 20, '120°', {
-            fontSize: '16px',
-            fill: '#FF9800'
-        });
+        // 60° angle
+        suppGraphics.lineStyle(5, 0x9C27B0);
+        suppGraphics.beginPath();
+        suppGraphics.moveTo(suppX + 100 * Math.cos(rad120), suppY - 100 * Math.sin(rad120));
+        suppGraphics.lineTo(suppX, suppY);
+        suppGraphics.lineTo(suppX + 120, suppY);
+        suppGraphics.strokePath();
 
-        // Second angle (60°)
-        graphics2.lineStyle(4, 0x9C27B0);
-        graphics2.beginPath();
-        graphics2.moveTo(x2 - 50, y2 - 87);
-        graphics2.lineTo(x2, y2);
-        graphics2.lineTo(x2 + 100, y2);
-        graphics2.strokePath();
+        const supp120Label = this.add.text(suppX - 60, suppY - 35, '120°', { fontSize: '18px', fill: '#FF9800' });
+        const supp60Label = this.add.text(suppX + 40, suppY - 35, '60°', { fontSize: '18px', fill: '#9C27B0' });
 
-        graphics2.lineStyle(2, 0x9C27B0, 0.7);
-        graphics2.arc(x2, y2, 40, Phaser.Math.DegToRad(-60), Phaser.Math.DegToRad(0));
-        graphics2.strokePath();
-
-        this.add.text(x2 + 30, y2 - 20, '60°', {
-            fontSize: '16px',
-            fill: '#9C27B0'
-        });
-
-        this.add.text(x2, y2 + 40, '120° + 60° = 180°', {
-            fontSize: '16px',
-            fill: '#d4a574'
-        }).setOrigin(0.5);
-
-        // Practice problems
-        this.add.text(500, 400, 'PRACTICE:', {
-            fontSize: '18px',
+        const suppFormula = this.add.text(suppX, suppY + 100, '120° + 60° = 180°', {
+            fontSize: '20px',
             fill: '#d4a574',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        const problems = [
-            'If one angle is 45°, what is its complement?',
-            'If one angle is 110°, what is its supplement?'
-        ];
-
-        problems.forEach((problem, index) => {
-            this.add.text(500, 440 + index * 40, problem, {
-                fontSize: '14px',
-                fill: '#c9b699'
-            }).setOrigin(0.5);
-
-            const answer = index === 0 ? '(Answer: 45°)' : '(Answer: 70°)';
-            this.add.text(500, 460 + index * 40, answer, {
-                fontSize: '12px',
-                fill: '#4CAF50'
-            }).setOrigin(0.5);
-        });
-
-        this.contentArea.add([graphics1, graphics2]);
+        this.contentArea.add([compTitle, compSubtitle, compGraphics, comp60Label, comp30Label, compFormula,
+                              suppTitle, suppSubtitle, suppGraphics, supp120Label, supp60Label, suppFormula]);
     }
 
     showCollinearPointsLesson() {
         this.titleText.setText('Collinear Points & Concurrency');
-        this.instructionText.setText('Collinear points lie on the same line. Concurrent lines meet at one point.');
+        this.instructionText.setText('Collinear = points on same line. Concurrent = lines meeting at one point.');
 
-        // Collinear points
-        const x1 = 300;
-        const y1 = 200;
+        // Top - Collinear
+        const collinearGraphics = this.add.graphics();
+        const lineY = 220;
 
-        this.add.text(x1, y1 - 60, 'COLLINEAR POINTS', {
-            fontSize: '18px',
-            fill: '#d4a574',
+        const collinearTitle = this.add.text(500, 130, 'COLLINEAR POINTS', {
+            fontSize: '22px',
+            fill: '#4CAF50',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        this.add.text(x1, y1 - 35, '(Points on the same line)', {
-            fontSize: '14px',
+        const collinearDesc = this.add.text(500, 165, '(All points lie on the same line)', {
+            fontSize: '16px',
             fill: '#c9b699'
         }).setOrigin(0.5);
 
-        const graphics1 = this.add.graphics();
+        // Line
+        collinearGraphics.lineStyle(3, 0x4CAF50);
+        collinearGraphics.beginPath();
+        collinearGraphics.moveTo(150, lineY);
+        collinearGraphics.lineTo(850, lineY);
+        collinearGraphics.strokePath();
 
-        graphics1.lineStyle(3, 0x4CAF50);
-        graphics1.beginPath();
-        graphics1.moveTo(x1 - 120, y1 + 50);
-        graphics1.lineTo(x1 + 120, y1 - 50);
-        graphics1.strokePath();
-
-        // Points on the line
+        // Points
         const points = [
-            { x: x1 - 80, y: y1 + 33, label: 'A' },
-            { x: x1 - 40, y: y1 + 17, label: 'B' },
-            { x: x1, y: y1, label: 'C' },
-            { x: x1 + 40, y: y1 - 17, label: 'D' }
+            { x: 250, label: 'A' },
+            { x: 400, label: 'B' },
+            { x: 550, label: 'C' },
+            { x: 700, label: 'D' }
         ];
 
         points.forEach(point => {
-            graphics1.fillStyle(0xFF0000);
-            graphics1.fillCircle(point.x, point.y, 6);
+            collinearGraphics.fillStyle(0xFF0000);
+            collinearGraphics.fillCircle(point.x, lineY, 8);
 
-            this.add.text(point.x, point.y + 20, point.label, {
-                fontSize: '16px',
-                fill: '#d4a574'
+            const label = this.add.text(point.x, lineY + 25, point.label, {
+                fontSize: '20px',
+                fill: '#d4a574',
+                fontStyle: 'bold'
             }).setOrigin(0.5);
+            this.contentArea.add(label);
         });
 
-        this.add.text(x1, y1 + 100, 'Points A, B, C, and D are collinear', {
-            fontSize: '14px',
-            fill: '#c9b699'
-        }).setOrigin(0.5);
+        // Bottom - Concurrent
+        const concurrentGraphics = this.add.graphics();
+        const concX = 500;
+        const concY = 480;
 
-        // Non-collinear points
-        const x2 = 700;
-        const y2 = 200;
-
-        this.add.text(x2, y2 - 60, 'NON-COLLINEAR POINTS', {
-            fontSize: '18px',
-            fill: '#d4a574',
+        const concurrentTitle = this.add.text(500, 350, 'CONCURRENT LINES', {
+            fontSize: '22px',
+            fill: '#2196F3',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        this.add.text(x2, y2 - 35, '(Points NOT on the same line)', {
-            fontSize: '14px',
+        const concurrentDesc = this.add.text(500, 385, '(All lines meet at one point)', {
+            fontSize: '16px',
             fill: '#c9b699'
         }).setOrigin(0.5);
 
-        const graphics2 = this.add.graphics();
+        // Three lines meeting at center
+        const lineAngles = [30, 90, 150];
+        const colors = [0xFF9800, 0x9C27B0, 0x4CAF50];
 
-        const nonCollinearPoints = [
-            { x: x2 - 60, y: y2, label: 'P' },
-            { x: x2 + 60, y: y2, label: 'Q' },
-            { x: x2, y: y2 + 60, label: 'R' }
-        ];
+        lineAngles.forEach((angle, i) => {
+            const rad = Phaser.Math.DegToRad(angle);
+            const length = 100;
 
-        nonCollinearPoints.forEach(point => {
-            graphics2.fillStyle(0xFF0000);
-            graphics2.fillCircle(point.x, point.y, 6);
-
-            this.add.text(point.x, point.y + 20, point.label, {
-                fontSize: '16px',
-                fill: '#d4a574'
-            }).setOrigin(0.5);
+            concurrentGraphics.lineStyle(4, colors[i]);
+            concurrentGraphics.beginPath();
+            concurrentGraphics.moveTo(concX - length * Math.cos(rad), concY - length * Math.sin(rad));
+            concurrentGraphics.lineTo(concX + length * Math.cos(rad), concY + length * Math.sin(rad));
+            concurrentGraphics.strokePath();
         });
 
-        // Connect with dashed lines to show triangle
-        graphics2.lineStyle(2, 0x2196F3, 1, 0.5);
-        graphics2.setLineDash([5, 5]);
-        graphics2.strokeTriangle(x2 - 60, y2, x2 + 60, y2, x2, y2 + 60);
+        // Center point
+        concurrentGraphics.fillStyle(0xFF0000);
+        concurrentGraphics.fillCircle(concX, concY, 10);
 
-        this.add.text(x2, y2 + 100, 'Points P, Q, and R are NOT collinear', {
-            fontSize: '14px',
-            fill: '#c9b699'
-        }).setOrigin(0.5);
-
-        // Point of concurrency
-        const x3 = 500;
-        const y3 = 500;
-
-        this.add.text(x3, y3 - 100, 'POINT OF CONCURRENCY', {
-            fontSize: '18px',
-            fill: '#d4a574',
-            fontStyle: 'bold'
-        }).setOrigin(0.5);
-
-        this.add.text(x3, y3 - 75, '(Lines meeting at one point)', {
-            fontSize: '14px',
-            fill: '#c9b699'
-        }).setOrigin(0.5);
-
-        const graphics3 = this.add.graphics();
-
-        // Three lines meeting at a point
-        const concurrentLines = [
-            { angle: 30, color: 0xFF9800 },
-            { angle: 90, color: 0x9C27B0 },
-            { angle: 150, color: 0x4CAF50 }
-        ];
-
-        concurrentLines.forEach(line => {
-            const radians = Phaser.Math.DegToRad(line.angle);
-            const length = 80;
-
-            graphics3.lineStyle(3, line.color);
-            graphics3.beginPath();
-            graphics3.moveTo(x3 - length * Math.cos(radians), y3 - length * Math.sin(radians));
-            graphics3.lineTo(x3 + length * Math.cos(radians), y3 + length * Math.sin(radians));
-            graphics3.strokePath();
-        });
-
-        // Concurrency point
-        graphics3.fillStyle(0xFF0000);
-        graphics3.fillCircle(x3, y3, 8);
-
-        this.add.text(x3 + 20, y3, 'Point of\nConcurrency', {
-            fontSize: '14px',
+        const pointLabel = this.add.text(concX + 30, concY, 'Point of\nConcurrency', {
+            fontSize: '16px',
             fill: '#FF0000',
-            align: 'left'
+            fontStyle: 'bold'
         });
 
-        this.contentArea.add([graphics1, graphics2, graphics3]);
+        this.contentArea.add([collinearTitle, collinearDesc, collinearGraphics,
+                              concurrentTitle, concurrentDesc, concurrentGraphics, pointLabel]);
     }
 }
 
