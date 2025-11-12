@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number System Converter - Fractions, Decimals, and Whole Numbers</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            font-family: 'Comic Sans MS', 'Trebuchet MS', 'Arial', sans-serif;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+        }
+
+        /* Floating Home Icon */
+        .home-icon {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 40px;
+            color: #d4a574;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #2c1810, #1a0f0a);
+            border: 3px solid rgba(139, 69, 19, 0.6);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+        }
+
+        .home-icon:hover {
+            background: linear-gradient(135deg, #3a2010, #2c1810);
+            transform: scale(1.15) rotate(5deg);
+            color: #ffcc80;
+            box-shadow: 0 6px 20px rgba(212, 165, 116, 0.4);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-family: 'Comic Sans MS', 'Trebuchet MS', 'Arial', sans-serif;
+            font-weight: bold;
+        }
+        #sketch-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .instructions {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: 'Comic Sans MS', 'Trebuchet MS', 'Arial', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Home Icon -->
+    <a href="math-fire-animation.html" class="home-icon" title="Back to Home">🏠</a>
+
+    <h1>Number System Converter</h1>
+    <div class="instructions">
+        <h3>How to Use:</h3>
+        <ul>
+            <li><strong>Click buttons</strong> to navigate through examples</li>
+            <li><strong>Press 'C'</strong> to show/hide conversion steps</li>
+            <li><strong>Press Spacebar</strong> to go to next example</li>
+            <li><strong>Press 'R'</strong> to reset to first example</li>
+        </ul>
+    </div>
+    <div id="sketch-container">
+        <!-- p5.js sketch will be inserted here -->
+    </div>
+
+    <script src="number-system.js"></script>
+    <script>
+        // Add smooth page transition for home icon
+        document.querySelector('.home-icon').addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = this.getAttribute('href');
+
+            // Add fade-out animation
+            document.body.style.animation = 'fadeOut 0.5s ease-in-out';
+
+            // Navigate after animation
+            setTimeout(() => {
+                window.location.href = href;
+            }, 500);
+        });
+    </script>
+</body>
+</html>
