@@ -206,13 +206,11 @@ class GeometryExplorer extends Phaser.Scene {
             shape.setData('targetRot', shapeData.targetRot);
             shape.setData('type', shapeData.type);
             shape.setData('matched', false);
+            shape.setData('isDragging', false);
 
-            // Click to rotate
-            shape.on('pointerdown', (pointer) => {
-                if (!pointer.event.shiftKey) { // Only rotate if not dragging
-                    shape.angle = (shape.angle + 90) % 360;
-                    this.checkRotationMatch(shape);
-                }
+            // Track drag start
+            shape.on('dragstart', () => {
+                shape.setData('isDragging', true);
             });
 
             // Drag to move
@@ -221,8 +219,22 @@ class GeometryExplorer extends Phaser.Scene {
                 shape.y = dragY;
             });
 
+            // Check on drag end
             shape.on('dragend', () => {
+                this.time.delayedCall(50, () => {
+                    shape.setData('isDragging', false);
+                });
                 this.checkRotationMatch(shape);
+            });
+
+            // Click to rotate (only if not dragging)
+            shape.on('pointerdown', () => {
+                this.time.delayedCall(100, () => {
+                    if (!shape.getData('isDragging')) {
+                        shape.angle = (shape.angle + 90) % 360;
+                        this.checkRotationMatch(shape);
+                    }
+                });
             });
 
             this.contentArea.add(shape);
@@ -280,11 +292,9 @@ class GeometryExplorer extends Phaser.Scene {
     }
 
     drawRotatableShape(x, y, type, color, isOutline) {
+        const container = this.add.container(x, y);
         const graphics = this.add.graphics();
         const size = 45;
-
-        graphics.x = x;
-        graphics.y = y;
 
         if (isOutline) {
             graphics.lineStyle(4, color, 0.7);
@@ -346,7 +356,10 @@ class GeometryExplorer extends Phaser.Scene {
                 break;
         }
 
-        return graphics;
+        container.add(graphics);
+        container.setSize(size * 2.5, size * 2.5);
+
+        return container;
     }
 
     showRulerPractice() {
