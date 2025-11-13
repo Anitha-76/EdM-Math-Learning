@@ -58,12 +58,12 @@ class GeometryExplorer extends Phaser.Scene {
         this.prevButton = this.createButton(80, height - 40, 'Previous', () => this.previousActivity());
         this.nextButton = this.createButton(width - 80, height - 40, 'Next', () => this.nextActivity());
 
-        // Instruction panel
-        this.instructionPanel = this.add.rectangle(width / 2, height - 40, width - 200, 60, 0x1a0f0a);
+        // Instruction panel (moved higher to avoid overlap with buttons)
+        this.instructionPanel = this.add.rectangle(width / 2, 605, width - 200, 50, 0x1a0f0a);
         this.instructionPanel.setStrokeStyle(2, 0x8b4513, 0.6);
 
-        this.instructionText = this.add.text(width / 2, height - 50, '', {
-            fontSize: '15px',
+        this.instructionText = this.add.text(width / 2, 590, '', {
+            fontSize: '14px',
             fill: '#c9b699',
             align: 'center',
             wordWrap: { width: width - 220 }
@@ -163,171 +163,190 @@ class GeometryExplorer extends Phaser.Scene {
 
     showIntro() {
         this.titleText.setText('🎓 Interactive Geometry Learning');
-        this.instructionText.setText('Drag the colorful shapes to match the gray outlines!');
+        this.instructionText.setText('CLICK shapes to rotate, DRAG to move. Match position AND orientation!');
 
-        const welcome = this.add.text(500, 130, 'Welcome! Let\'s explore geometry with hands-on tools', {
-            fontSize: '20px',
+        const welcome = this.add.text(500, 130, 'Welcome! Solve this rotation puzzle to begin', {
+            fontSize: '18px',
             fill: '#d4a574',
             fontStyle: 'italic'
         }).setOrigin(0.5);
         this.contentArea.add(welcome);
 
-        // Create target outlines (gray shadows where shapes should go)
+        // Create target outlines with specific rotations (gray shadows)
         const targets = [
-            { x: 200, y: 300, type: 'triangle', color: 0x555555 },
-            { x: 400, y: 300, type: 'square', color: 0x555555 },
-            { x: 600, y: 300, type: 'circle', color: 0x555555 },
-            { x: 800, y: 300, type: 'pentagon', color: 0x555555 }
+            { x: 200, y: 280, type: 'arrow', rotation: 0, color: 0x555555 },
+            { x: 400, y: 280, type: 'lshape', rotation: 90, color: 0x555555 },
+            { x: 600, y: 280, type: 'arrow', rotation: 180, color: 0x555555 },
+            { x: 800, y: 280, type: 'lshape', rotation: 270, color: 0x555555 }
         ];
 
         targets.forEach(target => {
-            const outline = this.drawShape(target.x, target.y, target.type, target.color, true);
+            const outline = this.drawRotatableShape(target.x, target.y, target.type, target.color, true);
+            outline.angle = target.rotation;
             this.contentArea.add(outline);
         });
 
-        // Create draggable colored shapes (scattered at bottom)
+        // Create draggable + rotatable shapes (scattered, random rotations)
         const shapes = [
-            { x: 250, y: 480, type: 'circle', color: 0x2196F3, targetX: 600, targetY: 300 },
-            { x: 450, y: 480, type: 'square', color: 0x4CAF50, targetX: 400, targetY: 300 },
-            { x: 650, y: 480, type: 'pentagon', color: 0xFF9800, targetX: 800, targetY: 300 },
-            { x: 850, y: 480, type: 'triangle', color: 0x9C27B0, targetX: 200, targetY: 300 }
+            { x: 200, y: 480, type: 'arrow', color: 0x2196F3, targetX: 200, targetY: 280, targetRot: 0, startRot: 90 },
+            { x: 400, y: 480, type: 'lshape', color: 0x4CAF50, targetX: 400, targetY: 280, targetRot: 90, startRot: 180 },
+            { x: 600, y: 480, type: 'arrow', color: 0xFF9800, targetX: 600, targetY: 280, targetRot: 180, startRot: 270 },
+            { x: 800, y: 480, type: 'lshape', color: 0x9C27B0, targetX: 800, targetY: 280, targetRot: 270, startRot: 0 }
         ];
 
         shapes.forEach(shapeData => {
-            const shape = this.drawShape(shapeData.x, shapeData.y, shapeData.type, shapeData.color, false);
+            const shape = this.drawRotatableShape(shapeData.x, shapeData.y, shapeData.type, shapeData.color, false);
+            shape.angle = shapeData.startRot;
             shape.setInteractive({ draggable: true, useHandCursor: true });
             this.input.setDraggable(shape);
 
-            // Store original position and target
-            shape.setData('startX', shapeData.x);
-            shape.setData('startY', shapeData.y);
+            // Store data
             shape.setData('targetX', shapeData.targetX);
             shape.setData('targetY', shapeData.targetY);
+            shape.setData('targetRot', shapeData.targetRot);
+            shape.setData('type', shapeData.type);
             shape.setData('matched', false);
 
-            shape.on('drag', (pointer, dragX, dragY) => {
+            // Click to rotate
+            shape.on('pointerdown', (pointer) => {
+                if (!pointer.event.shiftKey) { // Only rotate if not dragging
+                    shape.angle = (shape.angle + 90) % 360;
+                    this.checkRotationMatch(shape);
+                }
+            });
+
+            // Drag to move
+            shape.on('drag', (_pointer, dragX, dragY) => {
                 shape.x = dragX;
                 shape.y = dragY;
             });
 
             shape.on('dragend', () => {
-                const targetX = shape.getData('targetX');
-                const targetY = shape.getData('targetY');
-                const distance = Phaser.Math.Distance.Between(shape.x, shape.y, targetX, targetY);
-
-                if (distance < 50 && !shape.getData('matched')) {
-                    // Snap to target
-                    shape.x = targetX;
-                    shape.y = targetY;
-                    shape.setData('matched', true);
-
-                    // Visual feedback
-                    this.tweens.add({
-                        targets: shape,
-                        scale: { from: 1, to: 1.2 },
-                        yoyo: true,
-                        duration: 200
-                    });
-
-                    // Check if all matched
-                    this.checkAllMatched();
-                }
+                this.checkRotationMatch(shape);
             });
 
             this.contentArea.add(shape);
         });
 
-        const hint = this.add.text(500, 560, 'Click "Next" when ready to start learning!', {
-            fontSize: '16px',
-            fill: '#c9b699'
+        const hint = this.add.text(500, 545, 'Tip: Click to rotate 90°, drag to move', {
+            fontSize: '14px',
+            fill: '#FFD700'
         }).setOrigin(0.5);
         this.contentArea.add(hint);
     }
 
-    drawShape(x, y, type, color, isOutline) {
+    checkRotationMatch(shape) {
+        const targetX = shape.getData('targetX');
+        const targetY = shape.getData('targetY');
+        const targetRot = shape.getData('targetRot');
+
+        const distanceOK = Phaser.Math.Distance.Between(shape.x, shape.y, targetX, targetY) < 40;
+        const rotationOK = shape.angle === targetRot;
+
+        if (distanceOK && rotationOK && !shape.getData('matched')) {
+            // Perfect match!
+            shape.x = targetX;
+            shape.y = targetY;
+            shape.setData('matched', true);
+
+            // Visual feedback
+            this.tweens.add({
+                targets: shape,
+                scale: { from: 1, to: 1.3 },
+                yoyo: true,
+                duration: 250
+            });
+
+            // Check all matched
+            this.checkAllRotationMatched();
+        }
+    }
+
+    checkAllRotationMatched() {
+        const allShapes = this.contentArea.getAll().filter(obj => obj.getData && obj.getData('matched') !== undefined);
+        const allMatched = allShapes.every(shape => shape.getData('matched') === true);
+
+        if (allMatched && allShapes.length === 4) {
+            this.feedbackText.setText('🎉 Excellent! You solved the rotation puzzle!');
+            this.feedbackText.setColor('#FFD700');
+            this.tweens.add({
+                targets: this.feedbackText,
+                scale: { from: 1, to: 1.3 },
+                yoyo: true,
+                duration: 300,
+                repeat: 3
+            });
+        }
+    }
+
+    drawRotatableShape(x, y, type, color, isOutline) {
         const graphics = this.add.graphics();
-        const size = 50;
+        const size = 45;
+
+        graphics.x = x;
+        graphics.y = y;
 
         if (isOutline) {
-            graphics.lineStyle(4, color);
+            graphics.lineStyle(4, color, 0.7);
         } else {
             graphics.fillStyle(color);
         }
 
         switch(type) {
-            case 'triangle':
+            case 'arrow':
+                // Arrow pointing up (will be rotated)
                 if (isOutline) {
                     graphics.beginPath();
-                    graphics.moveTo(x, y - size);
-                    graphics.lineTo(x - size, y + size);
-                    graphics.lineTo(x + size, y + size);
+                    graphics.moveTo(0, -size);
+                    graphics.lineTo(size * 0.6, -size * 0.3);
+                    graphics.lineTo(size * 0.3, -size * 0.3);
+                    graphics.lineTo(size * 0.3, size);
+                    graphics.lineTo(-size * 0.3, size);
+                    graphics.lineTo(-size * 0.3, -size * 0.3);
+                    graphics.lineTo(-size * 0.6, -size * 0.3);
                     graphics.closePath();
                     graphics.strokePath();
                 } else {
-                    graphics.fillTriangle(x, y - size, x - size, y + size, x + size, y + size);
+                    graphics.beginPath();
+                    graphics.moveTo(0, -size);
+                    graphics.lineTo(size * 0.6, -size * 0.3);
+                    graphics.lineTo(size * 0.3, -size * 0.3);
+                    graphics.lineTo(size * 0.3, size);
+                    graphics.lineTo(-size * 0.3, size);
+                    graphics.lineTo(-size * 0.3, -size * 0.3);
+                    graphics.lineTo(-size * 0.6, -size * 0.3);
+                    graphics.closePath();
+                    graphics.fillPath();
                 }
                 break;
 
-            case 'square':
+            case 'lshape':
+                // L-shape
                 if (isOutline) {
-                    graphics.strokeRect(x - size, y - size, size * 2, size * 2);
-                } else {
-                    graphics.fillRect(x - size, y - size, size * 2, size * 2);
-                }
-                break;
-
-            case 'circle':
-                if (isOutline) {
-                    graphics.strokeCircle(x, y, size);
-                } else {
-                    graphics.fillCircle(x, y, size);
-                }
-                break;
-
-            case 'pentagon':
-                const points = [];
-                for (let i = 0; i < 5; i++) {
-                    const angle = (i * 72 - 90) * Math.PI / 180;
-                    points.push({
-                        x: x + size * Math.cos(angle),
-                        y: y + size * Math.sin(angle)
-                    });
-                }
-
-                graphics.beginPath();
-                graphics.moveTo(points[0].x, points[0].y);
-                for (let i = 1; i < points.length; i++) {
-                    graphics.lineTo(points[i].x, points[i].y);
-                }
-                graphics.closePath();
-
-                if (isOutline) {
+                    graphics.beginPath();
+                    graphics.moveTo(-size, -size);
+                    graphics.lineTo(0, -size);
+                    graphics.lineTo(0, 0);
+                    graphics.lineTo(size, 0);
+                    graphics.lineTo(size, size);
+                    graphics.lineTo(-size, size);
+                    graphics.closePath();
                     graphics.strokePath();
                 } else {
+                    graphics.beginPath();
+                    graphics.moveTo(-size, -size);
+                    graphics.lineTo(0, -size);
+                    graphics.lineTo(0, 0);
+                    graphics.lineTo(size, 0);
+                    graphics.lineTo(size, size);
+                    graphics.lineTo(-size, size);
+                    graphics.closePath();
                     graphics.fillPath();
                 }
                 break;
         }
 
         return graphics;
-    }
-
-    checkAllMatched() {
-        // Optional: show success message when all shapes are matched
-        const allShapes = this.contentArea.getAll().filter(obj => obj.getData && obj.getData('matched') !== undefined);
-        const allMatched = allShapes.every(shape => shape.getData('matched') === true);
-
-        if (allMatched && allShapes.length === 4) {
-            this.feedbackText.setText('🎉 Great job! You matched all the shapes!');
-            this.feedbackText.setColor('#FFD700');
-            this.tweens.add({
-                targets: this.feedbackText,
-                scale: { from: 1, to: 1.2 },
-                yoyo: true,
-                duration: 300,
-                repeat: 2
-            });
-        }
     }
 
     showRulerPractice() {
