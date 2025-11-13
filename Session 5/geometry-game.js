@@ -163,33 +163,171 @@ class GeometryExplorer extends Phaser.Scene {
 
     showIntro() {
         this.titleText.setText('🎓 Interactive Geometry Learning');
-        this.instructionText.setText('Use real tools to explore geometry concepts. Click "Next" to start!');
+        this.instructionText.setText('Drag the colorful shapes to match the gray outlines!');
 
-        const activities = [
-            '📏 Use a ruler to measure lines',
-            '✏️ Draw lines with exact measurements',
-            '📐 Use a protractor to measure angles',
-            '🔺 Create angles with precision',
-            '🔍 Identify different angle types',
-            '↔️ Recognize parallel lines',
-            '🎯 Complete geometry challenges'
-        ];
-
-        const startY = 150;
-        activities.forEach((activity, i) => {
-            const text = this.add.text(500, startY + i * 55, activity, {
-                fontSize: '22px',
-                fill: '#c9b699'
-            }).setOrigin(0.5);
-            this.contentArea.add(text);
-        });
-
-        const welcome = this.add.text(500, 550, 'Hands-on learning for ages 11-14!', {
+        const welcome = this.add.text(500, 130, 'Welcome! Let\'s explore geometry with hands-on tools', {
             fontSize: '20px',
             fill: '#d4a574',
             fontStyle: 'italic'
         }).setOrigin(0.5);
         this.contentArea.add(welcome);
+
+        // Create target outlines (gray shadows where shapes should go)
+        const targets = [
+            { x: 200, y: 300, type: 'triangle', color: 0x555555 },
+            { x: 400, y: 300, type: 'square', color: 0x555555 },
+            { x: 600, y: 300, type: 'circle', color: 0x555555 },
+            { x: 800, y: 300, type: 'pentagon', color: 0x555555 }
+        ];
+
+        targets.forEach(target => {
+            const outline = this.drawShape(target.x, target.y, target.type, target.color, true);
+            this.contentArea.add(outline);
+        });
+
+        // Create draggable colored shapes (scattered at bottom)
+        const shapes = [
+            { x: 250, y: 480, type: 'circle', color: 0x2196F3, targetX: 600, targetY: 300 },
+            { x: 450, y: 480, type: 'square', color: 0x4CAF50, targetX: 400, targetY: 300 },
+            { x: 650, y: 480, type: 'pentagon', color: 0xFF9800, targetX: 800, targetY: 300 },
+            { x: 850, y: 480, type: 'triangle', color: 0x9C27B0, targetX: 200, targetY: 300 }
+        ];
+
+        shapes.forEach(shapeData => {
+            const shape = this.drawShape(shapeData.x, shapeData.y, shapeData.type, shapeData.color, false);
+            shape.setInteractive({ draggable: true, useHandCursor: true });
+            this.input.setDraggable(shape);
+
+            // Store original position and target
+            shape.setData('startX', shapeData.x);
+            shape.setData('startY', shapeData.y);
+            shape.setData('targetX', shapeData.targetX);
+            shape.setData('targetY', shapeData.targetY);
+            shape.setData('matched', false);
+
+            shape.on('drag', (pointer, dragX, dragY) => {
+                shape.x = dragX;
+                shape.y = dragY;
+            });
+
+            shape.on('dragend', () => {
+                const targetX = shape.getData('targetX');
+                const targetY = shape.getData('targetY');
+                const distance = Phaser.Math.Distance.Between(shape.x, shape.y, targetX, targetY);
+
+                if (distance < 50 && !shape.getData('matched')) {
+                    // Snap to target
+                    shape.x = targetX;
+                    shape.y = targetY;
+                    shape.setData('matched', true);
+
+                    // Visual feedback
+                    this.tweens.add({
+                        targets: shape,
+                        scale: { from: 1, to: 1.2 },
+                        yoyo: true,
+                        duration: 200
+                    });
+
+                    // Check if all matched
+                    this.checkAllMatched();
+                }
+            });
+
+            this.contentArea.add(shape);
+        });
+
+        const hint = this.add.text(500, 560, 'Click "Next" when ready to start learning!', {
+            fontSize: '16px',
+            fill: '#c9b699'
+        }).setOrigin(0.5);
+        this.contentArea.add(hint);
+    }
+
+    drawShape(x, y, type, color, isOutline) {
+        const graphics = this.add.graphics();
+        const size = 50;
+
+        if (isOutline) {
+            graphics.lineStyle(4, color);
+        } else {
+            graphics.fillStyle(color);
+        }
+
+        switch(type) {
+            case 'triangle':
+                if (isOutline) {
+                    graphics.beginPath();
+                    graphics.moveTo(x, y - size);
+                    graphics.lineTo(x - size, y + size);
+                    graphics.lineTo(x + size, y + size);
+                    graphics.closePath();
+                    graphics.strokePath();
+                } else {
+                    graphics.fillTriangle(x, y - size, x - size, y + size, x + size, y + size);
+                }
+                break;
+
+            case 'square':
+                if (isOutline) {
+                    graphics.strokeRect(x - size, y - size, size * 2, size * 2);
+                } else {
+                    graphics.fillRect(x - size, y - size, size * 2, size * 2);
+                }
+                break;
+
+            case 'circle':
+                if (isOutline) {
+                    graphics.strokeCircle(x, y, size);
+                } else {
+                    graphics.fillCircle(x, y, size);
+                }
+                break;
+
+            case 'pentagon':
+                const points = [];
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 72 - 90) * Math.PI / 180;
+                    points.push({
+                        x: x + size * Math.cos(angle),
+                        y: y + size * Math.sin(angle)
+                    });
+                }
+
+                graphics.beginPath();
+                graphics.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    graphics.lineTo(points[i].x, points[i].y);
+                }
+                graphics.closePath();
+
+                if (isOutline) {
+                    graphics.strokePath();
+                } else {
+                    graphics.fillPath();
+                }
+                break;
+        }
+
+        return graphics;
+    }
+
+    checkAllMatched() {
+        // Optional: show success message when all shapes are matched
+        const allShapes = this.contentArea.getAll().filter(obj => obj.getData && obj.getData('matched') !== undefined);
+        const allMatched = allShapes.every(shape => shape.getData('matched') === true);
+
+        if (allMatched && allShapes.length === 4) {
+            this.feedbackText.setText('🎉 Great job! You matched all the shapes!');
+            this.feedbackText.setColor('#FFD700');
+            this.tweens.add({
+                targets: this.feedbackText,
+                scale: { from: 1, to: 1.2 },
+                yoyo: true,
+                duration: 300,
+                repeat: 2
+            });
+        }
     }
 
     showRulerPractice() {
