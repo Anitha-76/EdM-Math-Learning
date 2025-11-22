@@ -25,6 +25,10 @@ export default class GameScene extends Phaser.Scene {
         this.comboCount = 0;
         this.lastHitTime = 0;
 
+        // 2-Player scores
+        this.player1Score = 0;
+        this.player2Score = 0;
+
         // Initialize stats tracker
         this.statsTracker = new StatsTracker();
         this.statsTracker.startGame();
@@ -44,11 +48,37 @@ export default class GameScene extends Phaser.Scene {
             this.stars.push(star);
         }
 
-        // Create player
-        this.player = new Player(this, 400, 560);
+        // Create Player 1 (cyan tank - left side)
+        this.player1 = this.add.sprite(250, 540, 'player1');
+        this.physics.add.existing(this.player1);
+        this.player1.body.setCollideWorldBounds(true);
+        this.player1.body.setSize(34, 40);
+        this.player1.setDepth(10);
+        this.player1.speed = CONFIG.PLAYER_SPEED;
+        this.player1.fireRate = CONFIG.PLAYER_FIRE_RATE;
+        this.player1.lastFired = 0;
+        this.player1.lives = CONFIG.STARTING_LIVES;
+
+        // Create Player 2 (magenta tank - right side)
+        this.player2 = this.add.sprite(550, 540, 'player2');
+        this.physics.add.existing(this.player2);
+        this.player2.body.setCollideWorldBounds(true);
+        this.player2.body.setSize(34, 40);
+        this.player2.setDepth(10);
+        this.player2.speed = CONFIG.PLAYER_SPEED;
+        this.player2.fireRate = CONFIG.PLAYER_FIRE_RATE;
+        this.player2.lastFired = 0;
+        this.player2.lives = CONFIG.STARTING_LIVES;
+
+        // Shared lives for both players
+        this.sharedLives = CONFIG.STARTING_LIVES;
 
         // Create groups
-        this.bullets = this.add.group({
+        this.bullets1 = this.add.group({
+            classType: Bullet,
+            maxSize: 30
+        });
+        this.bullets2 = this.add.group({
             classType: Bullet,
             maxSize: 30
         });
@@ -76,19 +106,27 @@ export default class GameScene extends Phaser.Scene {
         this.soundManager = new SoundManager(this);
         this.soundManager.startMusic();
 
-        // Setup input
-        this.cursors = this.input.keyboard.createCursorKeys();
+        // Setup input for Player 1 (WASD + Shift)
         this.wasd = {
             up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
             down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
             left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
             right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
         };
-        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.player1ShootKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+
+        // Setup input for Player 2 (Arrow Keys + Enter)
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.player2ShootKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+
+        // Pause key
         this.pauseKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
-        // Prevent spacebar from scrolling the page
-        this.input.keyboard.addCapture(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        // Prevent keys from scrolling the page
+        this.input.keyboard.addCapture([
+            Phaser.Input.Keyboard.KeyCodes.SHIFT,
+            Phaser.Input.Keyboard.KeyCodes.ENTER
+        ]);
 
         // Create UI
         this.createUI();

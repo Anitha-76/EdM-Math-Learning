@@ -69,6 +69,118 @@ export default class BootScene extends Phaser.Scene {
         playerGraphics.generateTexture('player', 50, 50);
         playerGraphics.destroy();
 
+        // Create Player 1 sprite (cyan tank)
+        const player1Graphics = this.make.graphics({ x: 0, y: 0, add: false });
+
+        // Tank treads (dark gray)
+        player1Graphics.fillStyle(0x333333, 1);
+        player1Graphics.fillRoundedRect(2, 32, 12, 16, 3);
+        player1Graphics.fillRoundedRect(36, 32, 12, 16, 3);
+
+        // Tread details
+        player1Graphics.fillStyle(0x555555, 1);
+        player1Graphics.fillRect(4, 34, 8, 3);
+        player1Graphics.fillRect(4, 39, 8, 3);
+        player1Graphics.fillRect(4, 44, 8, 3);
+        player1Graphics.fillRect(38, 34, 8, 3);
+        player1Graphics.fillRect(38, 39, 8, 3);
+        player1Graphics.fillRect(38, 44, 8, 3);
+
+        // Tank body (bright cyan)
+        player1Graphics.fillStyle(0x00cccc, 1);
+        player1Graphics.fillRoundedRect(8, 24, 34, 20, 4);
+
+        // Tank body highlight
+        player1Graphics.fillStyle(0x00ffff, 1);
+        player1Graphics.fillRoundedRect(10, 26, 30, 8, 2);
+
+        // Turret base
+        player1Graphics.fillStyle(0x0099aa, 1);
+        player1Graphics.fillCircle(25, 28, 10);
+
+        // Turret top
+        player1Graphics.fillStyle(0x00cccc, 1);
+        player1Graphics.fillCircle(25, 28, 7);
+
+        // Cannon barrel
+        player1Graphics.fillStyle(0x444444, 1);
+        player1Graphics.fillRect(22, 2, 6, 20);
+
+        // Cannon barrel highlight
+        player1Graphics.fillStyle(0x666666, 1);
+        player1Graphics.fillRect(23, 2, 2, 18);
+
+        // Cannon muzzle
+        player1Graphics.fillStyle(0x00ffff, 1);
+        player1Graphics.fillCircle(25, 4, 4);
+
+        // Cannon muzzle inner
+        player1Graphics.fillStyle(0xffffff, 1);
+        player1Graphics.fillCircle(25, 4, 2);
+
+        // Circle decoration on turret
+        player1Graphics.fillStyle(0x00ffff, 1);
+        player1Graphics.fillCircle(25, 28, 3);
+
+        player1Graphics.generateTexture('player1', 50, 50);
+        player1Graphics.destroy();
+
+        // Create Player 2 sprite (magenta tank)
+        const player2Graphics = this.make.graphics({ x: 0, y: 0, add: false });
+
+        // Tank treads
+        player2Graphics.fillStyle(0x333333, 1);
+        player2Graphics.fillRoundedRect(2, 32, 12, 16, 3);
+        player2Graphics.fillRoundedRect(36, 32, 12, 16, 3);
+
+        // Tread details
+        player2Graphics.fillStyle(0x555555, 1);
+        player2Graphics.fillRect(4, 34, 8, 3);
+        player2Graphics.fillRect(4, 39, 8, 3);
+        player2Graphics.fillRect(4, 44, 8, 3);
+        player2Graphics.fillRect(38, 34, 8, 3);
+        player2Graphics.fillRect(38, 39, 8, 3);
+        player2Graphics.fillRect(38, 44, 8, 3);
+
+        // Tank body (bright magenta)
+        player2Graphics.fillStyle(0xcc00cc, 1);
+        player2Graphics.fillRoundedRect(8, 24, 34, 20, 4);
+
+        // Tank body highlight
+        player2Graphics.fillStyle(0xff00ff, 1);
+        player2Graphics.fillRoundedRect(10, 26, 30, 8, 2);
+
+        // Turret base
+        player2Graphics.fillStyle(0xaa0099, 1);
+        player2Graphics.fillCircle(25, 28, 10);
+
+        // Turret top
+        player2Graphics.fillStyle(0xcc00cc, 1);
+        player2Graphics.fillCircle(25, 28, 7);
+
+        // Cannon barrel
+        player2Graphics.fillStyle(0x444444, 1);
+        player2Graphics.fillRect(22, 2, 6, 20);
+
+        // Cannon barrel highlight
+        player2Graphics.fillStyle(0x666666, 1);
+        player2Graphics.fillRect(23, 2, 2, 18);
+
+        // Cannon muzzle
+        player2Graphics.fillStyle(0xff00ff, 1);
+        player2Graphics.fillCircle(25, 4, 4);
+
+        // Cannon muzzle inner
+        player2Graphics.fillStyle(0xffffff, 1);
+        player2Graphics.fillCircle(25, 4, 2);
+
+        // Circle decoration on turret
+        player2Graphics.fillStyle(0xff00ff, 1);
+        player2Graphics.fillCircle(25, 28, 3);
+
+        player2Graphics.generateTexture('player2', 50, 50);
+        player2Graphics.destroy();
+
         // Create enemy sprite (red/orange circle)
         const enemyGraphics = this.make.graphics({ x: 0, y: 0, add: false });
         enemyGraphics.fillStyle(0xff6600, 1);

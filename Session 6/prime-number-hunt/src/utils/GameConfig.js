@@ -58,7 +58,7 @@ export const CONFIG = {
 
     // Endless Mode
     ENDLESS_LIVES: 5,
-    ENDLESS_LIFE_RESTORE_INTERVAL: 50, // Every 50 correct hits
+    ENDLESS_LIFE_RESTORE_INTERVAL: 30, // Every 30 correct hits (reduced from 50 for faster pacing)
     ENDLESS_DIFFICULTY_RAMP: 0.05, // 5% speed increase per wave
 
     // Leaderboard

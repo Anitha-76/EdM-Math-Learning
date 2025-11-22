@@ -163,103 +163,218 @@ class GeometryExplorer extends Phaser.Scene {
 
     showIntro() {
         this.titleText.setText('🎓 Interactive Geometry Learning');
-        this.instructionText.setText('CLICK shapes to rotate, DRAG to move. Match position AND orientation!');
+        this.instructionText.setText('Complete the pattern! DRAG shapes to move, DOUBLE-CLICK to rotate!');
 
-        const welcome = this.add.text(500, 130, 'Welcome! Solve this rotation puzzle to begin', {
+        const welcome = this.add.text(500, 130, 'Welcome! Match each colored piece to its gray outline', {
             fontSize: '18px',
             fill: '#d4a574',
             fontStyle: 'italic'
         }).setOrigin(0.5);
         this.contentArea.add(welcome);
 
-        // Create target outlines with specific rotations (gray shadows)
-        const targets = [
-            { x: 200, y: 280, type: 'arrow', rotation: 0, color: 0x555555 },
-            { x: 400, y: 280, type: 'lshape', rotation: 90, color: 0x555555 },
-            { x: 600, y: 280, type: 'arrow', rotation: 180, color: 0x555555 },
-            { x: 800, y: 280, type: 'lshape', rotation: 270, color: 0x555555 }
-        ];
+        // Create puzzle canvas workspace
+        const canvas = this.add.container(500, 350);
+        const canvasBg = this.add.rectangle(0, 0, 900, 400, 0x0f0f0f, 0.5);
+        canvasBg.setStrokeStyle(2, 0x8b4513, 0.6);
+        canvas.add(canvasBg);
 
-        targets.forEach(target => {
-            const outline = this.drawRotatableShape(target.x, target.y, target.type, target.color, true);
-            outline.angle = target.rotation;
-            this.contentArea.add(outline);
-        });
+        // TARGET PATTERN: Simple 4-piece tangram (gray outlines)
+        const targetPattern = this.add.graphics();
+        targetPattern.lineStyle(4, 0x888888, 0.8);
 
-        // Create draggable + rotatable shapes (scattered, random rotations)
+        const size = 60; // Base size for all pieces
+
+        // Triangle 1 - left triangle (right isosceles, 90° at bottom-left)
+        targetPattern.beginPath();
+        targetPattern.moveTo(-size, -size/2);        // top left
+        targetPattern.lineTo(-size, size/2);         // bottom left
+        targetPattern.lineTo(0, size/2);             // bottom right
+        targetPattern.closePath();
+        targetPattern.strokePath();
+
+        // Triangle 2 - top triangle (right isosceles, 90° at top-right)
+        targetPattern.beginPath();
+        targetPattern.moveTo(0, -size/2);            // left
+        targetPattern.lineTo(size, -size/2);         // top right
+        targetPattern.lineTo(size, size/2);          // bottom right
+        targetPattern.closePath();
+        targetPattern.strokePath();
+
+        // Square - bottom left
+        targetPattern.strokeRect(-size, size/2, size, size);
+
+        // Square - bottom right
+        targetPattern.strokeRect(0, size/2, size, size);
+
+        canvas.add(targetPattern);
+
+        // LOOSE COLORED PIECES - matching the pattern exactly
         const shapes = [
-            { x: 200, y: 480, type: 'arrow', color: 0x2196F3, targetX: 200, targetY: 280, targetRot: 0, startRot: 90 },
-            { x: 400, y: 480, type: 'lshape', color: 0x4CAF50, targetX: 400, targetY: 280, targetRot: 90, startRot: 180 },
-            { x: 600, y: 480, type: 'arrow', color: 0xFF9800, targetX: 600, targetY: 280, targetRot: 180, startRot: 270 },
-            { x: 800, y: 480, type: 'lshape', color: 0x9C27B0, targetX: 800, targetY: 280, targetRot: 270, startRot: 0 }
+            // Orange triangle - left (type1: 90° at bottom-left)
+            { x: -320, y: 120, type: 'triangle1', color: 0xFF5722, targetX: -size/2, targetY: 0, targetRot: 0, startRot: 90, size: size },
+
+            // Blue triangle - right (type2: 90° at top-right)
+            { x: -180, y: 120, type: 'triangle2', color: 0x2196F3, targetX: size/2, targetY: 0, targetRot: 0, startRot: 180, size: size },
+
+            // Green square - bottom left
+            { x: 0, y: 120, type: 'square', color: 0x4CAF50, targetX: -size/2, targetY: size, targetRot: 0, startRot: 45, size: size },
+
+            // Purple square - bottom right
+            { x: 180, y: 120, type: 'square', color: 0x9C27B0, targetX: size/2, targetY: size, targetRot: 0, startRot: 180, size: size }
         ];
+
+        this.puzzleShapes = []; // Track active shapes
 
         shapes.forEach(shapeData => {
-            const shape = this.drawRotatableShape(shapeData.x, shapeData.y, shapeData.type, shapeData.color, false);
+            const shape = this.drawPuzzleShape(shapeData.x, shapeData.y, shapeData.type, shapeData.color, shapeData.size);
             shape.angle = shapeData.startRot;
-            shape.setInteractive({ draggable: true, useHandCursor: true });
-            this.input.setDraggable(shape);
 
-            // Store data
+            // Store target data first
             shape.setData('targetX', shapeData.targetX);
             shape.setData('targetY', shapeData.targetY);
             shape.setData('targetRot', shapeData.targetRot);
             shape.setData('type', shapeData.type);
             shape.setData('matched', false);
-            shape.setData('isDragging', false);
 
-            // Track drag start
+            // Add to canvas FIRST before making interactive
+            canvas.add(shape);
+
+            // Now make it interactive
+            shape.setInteractive({ draggable: true, useHandCursor: true });
+            this.input.setDraggable(shape);
+
+            // Bring to top when drag starts
             shape.on('dragstart', () => {
-                shape.setData('isDragging', true);
+                canvas.bringToTop(shape);
             });
 
-            // Drag to move
-            shape.on('drag', (_pointer, dragX, dragY) => {
-                shape.x = dragX;
-                shape.y = dragY;
+            // Drag to move (constrain within canvas)
+            shape.on('drag', (pointer) => {
+                // Get pointer position relative to the canvas container
+                const localX = pointer.x - canvas.x;
+                const localY = pointer.y - canvas.y;
+
+                // Constrain within canvas bounds
+                const constrainedX = Phaser.Math.Clamp(localX, -420, 420);
+                const constrainedY = Phaser.Math.Clamp(localY, -180, 180);
+
+                shape.x = constrainedX;
+                shape.y = constrainedY;
             });
 
             // Check on drag end
             shape.on('dragend', () => {
-                this.time.delayedCall(50, () => {
-                    shape.setData('isDragging', false);
-                });
                 this.checkRotationMatch(shape);
             });
 
-            // Click to rotate (only if not dragging)
-            shape.on('pointerdown', () => {
-                this.time.delayedCall(100, () => {
-                    if (!shape.getData('isDragging')) {
-                        shape.angle = (shape.angle + 90) % 360;
-                        this.checkRotationMatch(shape);
-                    }
-                });
+            // Single click to rotate (simpler interaction)
+            let lastClick = 0;
+            shape.on('pointerup', (pointer) => {
+                // Don't rotate if we just finished dragging
+                if (pointer.getDistance() > 5) {
+                    return;
+                }
+
+                const now = Date.now();
+                if (now - lastClick < 300) { // Double click - rotate
+                    // Round to nearest 90° and add 90°
+                    const currentAngle = shape.angle;
+                    const roundedAngle = Math.round(currentAngle / 90) * 90;
+                    shape.angle = (roundedAngle + 90) % 360;
+                    this.checkRotationMatch(shape);
+                    lastClick = 0; // Reset to avoid triple-click issues
+                } else {
+                    lastClick = now;
+                }
             });
 
-            this.contentArea.add(shape);
+            this.puzzleShapes.push(shape);
         });
 
-        const hint = this.add.text(500, 545, 'Tip: Click to rotate 90°, drag to move', {
-            fontSize: '14px',
+        this.contentArea.add(canvas);
+
+        const hint = this.add.text(500, 545, 'Tip: DRAG to move pieces, DOUBLE-CLICK to rotate 90°', {
+            fontSize: '13px',
             fill: '#FFD700'
         }).setOrigin(0.5);
         this.contentArea.add(hint);
+    }
+
+    drawPuzzleShape(x, y, type, color, size) {
+        const container = this.add.container(x, y);
+        const graphics = this.add.graphics();
+
+        graphics.fillStyle(color);
+        graphics.lineStyle(2, 0x000000);
+
+        switch(type) {
+            case 'triangle1':
+                // Triangle 1 - Right isosceles triangle, 90° at bottom-left
+                // Matches outline: (-size, -size/2), (-size, size/2), (0, size/2)
+                graphics.beginPath();
+                graphics.moveTo(-size/2, -size/2);   // top left
+                graphics.lineTo(-size/2, size/2);    // bottom left (90° corner)
+                graphics.lineTo(size/2, size/2);     // bottom right
+                graphics.closePath();
+                graphics.fillPath();
+                graphics.strokePath();
+                container.setSize(size, size);
+                break;
+
+            case 'triangle2':
+                // Triangle 2 - Right isosceles triangle, 90° at top-right
+                // Matches outline: (0, -size/2), (size, -size/2), (size, size/2)
+                graphics.beginPath();
+                graphics.moveTo(-size/2, -size/2);   // top left
+                graphics.lineTo(size/2, -size/2);    // top right (90° corner)
+                graphics.lineTo(size/2, size/2);     // bottom right
+                graphics.closePath();
+                graphics.fillPath();
+                graphics.strokePath();
+                container.setSize(size, size);
+                break;
+
+            case 'square':
+                // Square centered at origin
+                graphics.fillRect(-size/2, -size/2, size, size);
+                graphics.strokeRect(-size/2, -size/2, size, size);
+                container.setSize(size, size);
+                break;
+        }
+
+        container.add(graphics);
+
+        return container;
     }
 
     checkRotationMatch(shape) {
         const targetX = shape.getData('targetX');
         const targetY = shape.getData('targetY');
         const targetRot = shape.getData('targetRot');
+        const shapeType = shape.getData('type');
 
         const distanceOK = Phaser.Math.Distance.Between(shape.x, shape.y, targetX, targetY) < 40;
-        const rotationOK = shape.angle === targetRot;
+
+        // For squares, rotation doesn't matter (looks the same at 0°, 90°, 180°, 270°)
+        let rotationOK = true;
+        if (shapeType === 'triangle1' || shapeType === 'triangle2') {
+            // For triangles, check rotation
+            // Normalize angles to 0-360 range for comparison
+            const normalizedAngle = ((shape.angle % 360) + 360) % 360;
+            const normalizedTarget = ((targetRot % 360) + 360) % 360;
+            rotationOK = Math.abs(normalizedAngle - normalizedTarget) < 5;
+        }
 
         if (distanceOK && rotationOK && !shape.getData('matched')) {
             // Perfect match!
             shape.x = targetX;
             shape.y = targetY;
+            shape.angle = targetRot;
             shape.setData('matched', true);
+
+            // Lock the piece in place - disable dragging
+            shape.disableInteractive();
+            this.input.setDraggable(shape, false);
 
             // Visual feedback
             this.tweens.add({
@@ -275,10 +390,11 @@ class GeometryExplorer extends Phaser.Scene {
     }
 
     checkAllRotationMatched() {
-        const allShapes = this.contentArea.getAll().filter(obj => obj.getData && obj.getData('matched') !== undefined);
-        const allMatched = allShapes.every(shape => shape.getData('matched') === true);
+        if (!this.puzzleShapes || this.puzzleShapes.length === 0) return;
 
-        if (allMatched && allShapes.length === 4) {
+        const allMatched = this.puzzleShapes.every(shape => shape.getData('matched') === true);
+
+        if (allMatched) {
             this.feedbackText.setText('🎉 Excellent! You solved the rotation puzzle!');
             this.feedbackText.setColor('#FFD700');
             this.tweens.add({
@@ -981,7 +1097,22 @@ const config = {
     height: 700,
     backgroundColor: '#0a0a0a',
     parent: 'phaser-game',
-    scene: GeometryExplorer
+    scene: GeometryExplorer,
+    input: {
+        mouse: {
+            preventDefaultWheel: false,
+            target: null
+        },
+        touch: {
+            target: null
+        }
+    }
 };
 
 const game = new Phaser.Game(config);
+
+// Disable right-click context menu on the game canvas
+game.canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    return false;
+});

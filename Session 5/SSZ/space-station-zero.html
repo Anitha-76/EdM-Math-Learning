@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Station Zero - Integer Matching Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #000814;
+            font-family: 'Arial', sans-serif;
+        }
+        #game-container {
+            box-shadow: 0 0 30px rgba(0, 183, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+
+    <script>
+        // Game configuration
+        const config = {
+            type: Phaser.AUTO,
+            width: 1200,
+            height: 800,
+            parent: 'game-container',
+            backgroundColor: '#000814',
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        const game = new Phaser.Game(config);
+
+        // Game variables
+        let cards = [];
+        let selectedCards = [];
+        let matchedSets = 0;
+        let canClick = true;
+        let scoreText;
+        let titleText;
+        let restartButton;
+        let tutorialContainer;
+        let animationContainer;
+
+        // Level 1 card data - 6 sets of 3 cards each
+        const cardData = [
+            // Set 1: +3
+            { id: 0, set: 1, type: 'number', value: 3, content: '3', color: 'cyan' },
+            { id: 1, set: 1, type: 'visual', value: 3, content: 'visual_3', color: 'cyan' },
+            { id: 2, set: 1, type: 'description', value: 3, content: '3 levels\nabove the\nstation', color: 'cyan' },
+
+            // Set 2: -2
+            { id: 3, set: 2, type: 'number', value: -2, content: '-2', color: 'orange' },
+            { id: 4, set: 2, type: 'visual', value: -2, content: 'visual_-2', color: 'orange' },
+            { id: 5, set: 2, type: 'description', value: -2, content: '2 levels\nbelow the\nstation', color: 'orange' },
+
+            // Set 3: +5
+            { id: 6, set: 3, type: 'number', value: 5, content: '5', color: 'cyan' },
+            { id: 7, set: 3, type: 'visual', value: 5, content: 'visual_5', color: 'cyan' },
+            { id: 8, set: 3, type: 'description', value: 5, content: 'Temperature\n5°C above\nzero', color: 'cyan' },
+
+            // Set 4: -4
+            { id: 9, set: 4, type: 'number', value: -4, content: '-4', color: 'orange' },
+            { id: 10, set: 4, type: 'visual', value: -4, content: 'visual_-4', color: 'orange' },
+            { id: 11, set: 4, type: 'description', value: -4, content: '4 floors\nunder-\nground', color: 'orange' },
+
+            // Set 5: 0
+            { id: 12, set: 5, type: 'number', value: 0, content: '0', color: 'white' },
+            { id: 13, set: 5, type: 'visual', value: 0, content: 'visual_0', color: 'white' },
+            { id: 14, set: 5, type: 'description', value: 0, content: 'At the\nspace station\n(zero point)', color: 'white' },
+
+            // Set 6: -1
+            { id: 15, set: 6, type: 'number', value: -1, content: '-1', color: 'orange' },
+            { id: 16, set: 6, type: 'visual', value: -1, content: 'visual_-1', color: 'orange' },
+            { id: 17, set: 6, type: 'description', value: -1, content: '1°C below\nfreezing', color: 'orange' }
+        ];
+
+        function preload() {
+            // No external assets needed - we'll draw everything
+        }
+
+        function create() {
+            const scene = this;
+
+            // Create starry background
+            createStarfield(scene);
+
+            // Title
+            titleText = scene.add.text(450, 30, 'SPACE STATION ZERO', {
+                fontSize: '36px',
+                fontFamily: 'Arial',
+                color: '#00b7ff',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            // Subtitle
+            scene.add.text(450, 65, 'Match numbers with their meanings!', {
+                fontSize: '18px',
+                fontFamily: 'Arial',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+
+            // Score display - moved to right side
+            const scoreBg = scene.add.graphics();
+            scoreBg.fillStyle(0x001d3d, 0.9);
+            scoreBg.lineStyle(2, 0x00ff88, 0.8);
+            scoreBg.fillRoundedRect(900, 160, 280, 50, 10);
+            scoreBg.strokeRoundedRect(900, 160, 280, 50, 10);
+
+            scoreText = scene.add.text(1040, 185, 'Sets Matched: 0/6', {
+                fontSize: '22px',
+                fontFamily: 'Arial',
+                color: '#00ff88',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            // Tutorial panel
+            tutorialContainer = createTutorial(scene);
+
+            // Shuffle and create cards
+            const shuffledData = Phaser.Utils.Array.Shuffle([...cardData]);
+            createCards(scene, shuffledData);
+
+            // Restart button (initially hidden)
+            createRestartButton(scene);
+        }
+
+        function createStarfield(scene) {
+            for (let i = 0; i < 100; i++) {
+                const x = Phaser.Math.Between(0, 1200);
+                const y = Phaser.Math.Between(0, 800);
+                const radius = Phaser.Math.FloatBetween(0.5, 2);
+                const alpha = Phaser.Math.FloatBetween(0.3, 1);
+
+                const star = scene.add.circle(x, y, radius, 0xffffff, alpha);
+
+                // Twinkle animation
+                scene.tweens.add({
+                    targets: star,
+                    alpha: alpha * 0.3,
+                    duration: Phaser.Math.Between(1000, 3000),
+                    yoyo: true,
+                    repeat: -1
+                });
+            }
+        }
+
+        function showSpaceshipAnimation(scene, value) {
+            // Create animation panel in the same position as tutorial
+            const container = scene.add.container(0, 0);
+
+            // Background panel
+            const bg = scene.add.graphics();
+            bg.fillStyle(0x001d3d, 0.9);
+            bg.lineStyle(2, 0x00ff88, 0.8);
+            bg.fillRoundedRect(900, 220, 280, 370, 10);
+            bg.strokeRoundedRect(900, 220, 280, 370, 10);
+
+            // Title
+            const title = scene.add.text(1040, 245, 'GREAT MATCH!', {
+                fontSize: '18px',
+                fontFamily: 'Arial',
+                color: '#00ff88',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            // Number line visual
+            const lineX = 1040;
+            const lineTop = 300;
+            const lineBottom = 520;
+            const lineHeight = lineBottom - lineTop;
+            const unitSize = lineHeight / 10; // Scale for -5 to +5
+
+            const graphics = scene.add.graphics();
+
+            // Vertical line
+            graphics.lineStyle(3, 0x666666, 1);
+            graphics.lineBetween(lineX, lineTop, lineX, lineBottom);
+
+            // Zero point (space station)
+            const zeroY = 410; // Middle of the line
+            graphics.fillStyle(0xffffff, 1);
+            graphics.fillCircle(lineX, zeroY, 8);
+
+            // Station symbol
+            graphics.lineStyle(3, 0xffffff, 1);
+            graphics.strokeRect(lineX - 12, zeroY - 4, 24, 8);
+
+            // Station label
+            const stationLabel = scene.add.text(lineX + 25, zeroY, '0', {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                fontStyle: 'bold'
+            }).setOrigin(0, 0.5);
+
+            // Tick marks and labels
+            for (let i = -5; i <= 5; i++) {
+                if (i === 0) continue;
+                const tickY = zeroY - (i * unitSize);
+                graphics.lineStyle(2, 0x444444, 1);
+                graphics.lineBetween(lineX - 6, tickY, lineX + 6, tickY);
+
+                // Labels for major ticks
+                if (i % 1 === 0) {
+                    scene.add.text(lineX + 20, tickY, i > 0 ? `+${i}` : `${i}`, {
+                        fontSize: '12px',
+                        fontFamily: 'Arial',
+                        color: '#888888'
+                    }).setOrigin(0, 0.5);
+                }
+            }
+
+            // Spaceship - starts at zero
+            const shipStartY = zeroY;
+            const shipColor = value >= 0 ? 0x00b7ff : 0xff6b35;
+
+            const spaceship = scene.add.graphics();
+            spaceship.fillStyle(shipColor, 1);
+
+            // Spaceship body
+            spaceship.beginPath();
+            spaceship.moveTo(lineX - 40, 0);
+            spaceship.lineTo(lineX - 55, -10);
+            spaceship.lineTo(lineX - 55, 10);
+            spaceship.closePath();
+            spaceship.fillPath();
+
+            // Spaceship window
+            spaceship.fillStyle(0xffffff, 0.8);
+            spaceship.fillCircle(lineX - 48, 0, 4);
+
+            spaceship.x = 0;
+            spaceship.y = shipStartY;
+
+            // Description text
+            let descriptionText;
+            if (value > 0) {
+                descriptionText = `Moving UP ${value}\nlevel${value > 1 ? 's' : ''}!`;
+            } else if (value < 0) {
+                descriptionText = `Moving DOWN ${Math.abs(value)}\nlevel${Math.abs(value) > 1 ? 's' : ''}!`;
+            } else {
+                descriptionText = 'Staying at the\nspace station!';
+            }
+
+            const desc = scene.add.text(1040, 545, descriptionText, {
+                fontSize: '14px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                align: 'center',
+                lineSpacing: 4
+            }).setOrigin(0.5);
+
+            // Add elements to container
+            container.add([bg, title, graphics, stationLabel, spaceship, desc]);
+
+            // Animate spaceship movement
+            const targetY = zeroY - (value * unitSize);
+
+            scene.tweens.add({
+                targets: spaceship,
+                y: targetY,
+                duration: 1500,
+                ease: 'Power2',
+                onComplete: () => {
+                    // Wait a moment then fade out animation and show tutorial
+                    scene.time.delayedCall(1000, () => {
+                        scene.tweens.add({
+                            targets: container,
+                            alpha: 0,
+                            duration: 300,
+                            onComplete: () => {
+                                container.destroy();
+                                tutorialContainer.setAlpha(1);
+                                tutorialContainer.setVisible(true);
+                            }
+                        });
+                    });
+                }
+            });
+
+            // Store reference
+            animationContainer = container;
+            return container;
+        }
+
+        function createTutorial(scene) {
+            const container = scene.add.container(0, 0);
+
+            // Tutorial background panel - right side, below score
+            const tutorialBg = scene.add.graphics();
+            tutorialBg.fillStyle(0x001d3d, 0.9);
+            tutorialBg.lineStyle(2, 0x00b7ff, 0.8);
+            tutorialBg.fillRoundedRect(900, 220, 280, 370, 10);
+            tutorialBg.strokeRoundedRect(900, 220, 280, 370, 10);
+
+            // Tutorial title
+            const title = scene.add.text(1040, 235, 'HOW TO PLAY', {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#00b7ff',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            // Instructions vertically stacked
+            const instructionStyle = {
+                fontSize: '15px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                align: 'left',
+                wordWrap: { width: 240 }
+            };
+
+            // Step 1
+            const step1Icon = scene.add.graphics();
+            step1Icon.fillStyle(0x00ff88, 1);
+            step1Icon.fillCircle(925, 270, 7);
+
+            const step1Num = scene.add.text(925, 270, '1', {
+                fontSize: '12px',
+                fontFamily: 'Arial',
+                color: '#000000',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            const step1Text = scene.add.text(950, 262, 'Click cards to flip\nand reveal content', {
+                fontSize: '12px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                lineSpacing: 3
+            });
+
+            // Step 2
+            const step2Icon = scene.add.graphics();
+            step2Icon.fillStyle(0xfbbf24, 1);
+            step2Icon.fillCircle(925, 330, 7);
+
+            const step2Num = scene.add.text(925, 330, '2', {
+                fontSize: '12px',
+                fontFamily: 'Arial',
+                color: '#000000',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            const step2Text = scene.add.text(950, 314, 'Match THREE cards\ntogether:', {
+                fontSize: '12px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                lineSpacing: 3
+            });
+
+            const step2List = scene.add.text(960, 344, '• Number\n• Visual\n• Meaning', {
+                fontSize: '11px',
+                fontFamily: 'Arial',
+                color: '#aaaaaa',
+                lineSpacing: 4
+            });
+
+            // Step 3
+            const step3Icon = scene.add.graphics();
+            step3Icon.fillStyle(0xff6b35, 1);
+            step3Icon.fillCircle(925, 430, 7);
+
+            const step3Num = scene.add.text(925, 430, '3', {
+                fontSize: '12px',
+                fontFamily: 'Arial',
+                color: '#000000',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            const step3Text = scene.add.text(950, 418, 'Find all 6 sets to\ncomplete the mission!', {
+                fontSize: '12px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                lineSpacing: 3
+            });
+
+            // Visual example icons at bottom
+            const cardTypesTitle = scene.add.text(1040, 470, 'Card Types:', {
+                fontSize: '11px',
+                fontFamily: 'Arial',
+                color: '#00b7ff',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            const exampleGraphics = scene.add.graphics();
+            // Number card example
+            exampleGraphics.lineStyle(2, 0x00b7ff, 1);
+            exampleGraphics.strokeRect(930, 488, 48, 52, 5);
+            const numExample = scene.add.text(954, 514, '3', {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#00b7ff',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            // Visual card example
+            exampleGraphics.lineStyle(2, 0xff6b35, 1);
+            exampleGraphics.strokeRect(1014, 488, 48, 52, 5);
+            exampleGraphics.lineStyle(1, 0x666666, 1);
+            exampleGraphics.lineBetween(1038, 498, 1038, 530);
+
+            // Meaning card example
+            exampleGraphics.lineStyle(2, 0xfbbf24, 1);
+            exampleGraphics.strokeRect(1098, 488, 48, 52, 5);
+            const meaningExample = scene.add.text(1122, 514, 'ABC', {
+                fontSize: '10px',
+                fontFamily: 'Arial',
+                color: '#fbbf24'
+            }).setOrigin(0.5);
+
+            // Add all elements to container
+            container.add([
+                tutorialBg, title,
+                step1Icon, step1Num, step1Text,
+                step2Icon, step2Num, step2Text, step2List,
+                step3Icon, step3Num, step3Text,
+                cardTypesTitle, exampleGraphics, numExample, meaningExample
+            ]);
+
+            return container;
+        }
+
+        function createCards(scene, data) {
+            const cardWidth = 115;
+            const cardHeight = 145;
+            const padding = 12;
+            const startX = 80;
+            const startY = 160;
+            const cols = 6;
+
+            data.forEach((cardInfo, index) => {
+                const row = Math.floor(index / cols);
+                const col = index % cols;
+                const x = startX + col * (cardWidth + padding);
+                const y = startY + row * (cardHeight + padding);
+
+                const card = createCard(scene, x, y, cardWidth, cardHeight, cardInfo);
+                cards.push(card);
+            });
+        }
+
+        function createCard(scene, x, y, width, height, cardInfo) {
+            const container = scene.add.container(x, y);
+
+            // Card back (face down)
+            const back = scene.add.graphics();
+            drawCardBack(back, width, height);
+
+            // Card front (face up)
+            const front = scene.add.container(0, 0);
+            drawCardFront(scene, front, width, height, cardInfo);
+            front.setVisible(false);
+
+            container.add([back, front]);
+            container.setSize(width, height);
+            container.setInteractive({ useHandCursor: true });
+
+            // Store card data
+            container.cardInfo = cardInfo;
+            container.isFlipped = false;
+            container.isMatched = false;
+            container.backGraphics = back;
+            container.frontContainer = front;
+
+            // Click handler
+            container.on('pointerdown', () => handleCardClick(scene, container));
+
+            // Hover effects
+            container.on('pointerover', () => {
+                if (!container.isMatched && canClick) {
+                    scene.tweens.add({
+                        targets: container,
+                        scaleX: 1.05,
+                        scaleY: 1.05,
+                        duration: 100
+                    });
+                }
+            });
+
+            container.on('pointerout', () => {
+                if (!container.isMatched) {
+                    scene.tweens.add({
+                        targets: container,
+                        scaleX: 1,
+                        scaleY: 1,
+                        duration: 100
+                    });
+                }
+            });
+
+            return container;
+        }
+
+        function drawCardBack(graphics, width, height) {
+            // Dark space background
+            graphics.fillStyle(0x000d1a, 1);
+            graphics.fillRoundedRect(-width/2, -height/2, width, height, 10);
+
+            // Draw space station imagery
+            // Central station hub
+            graphics.fillStyle(0x4a5568, 1);
+            graphics.fillCircle(0, 0, 15);
+
+            // Station core glow
+            graphics.fillStyle(0x00b7ff, 0.4);
+            graphics.fillCircle(0, 0, 10);
+
+            // Solar panels (left)
+            graphics.fillStyle(0x2563eb, 0.7);
+            graphics.fillRect(-35, -5, 15, 10);
+            graphics.lineStyle(1, 0x60a5fa, 1);
+            graphics.strokeRect(-35, -5, 15, 10);
+            graphics.lineBetween(-27, -5, -27, 5);
+            graphics.lineBetween(-32, -5, -32, 5);
+            graphics.lineBetween(-22, -5, -22, 5);
+
+            // Solar panels (right)
+            graphics.fillStyle(0x2563eb, 0.7);
+            graphics.fillRect(20, -5, 15, 10);
+            graphics.lineStyle(1, 0x60a5fa, 1);
+            graphics.strokeRect(20, -5, 15, 10);
+            graphics.lineBetween(23, -5, 23, 5);
+            graphics.lineBetween(28, -5, 28, 5);
+            graphics.lineBetween(33, -5, 33, 5);
+
+            // Connection arms
+            graphics.lineStyle(2, 0x6b7280, 1);
+            graphics.lineBetween(-20, 0, -35, 0);
+            graphics.lineBetween(20, 0, 35, 0);
+
+            // Antenna on top
+            graphics.lineStyle(2, 0x9ca3af, 1);
+            graphics.lineBetween(0, -15, 0, -35);
+            graphics.fillStyle(0xef4444, 1);
+            graphics.fillCircle(0, -35, 3);
+
+            // Windows/lights on station
+            graphics.fillStyle(0xfbbf24, 0.8);
+            graphics.fillCircle(-4, 0, 2);
+            graphics.fillCircle(4, 0, 2);
+            graphics.fillCircle(0, -4, 2);
+
+            // Small stars around station
+            graphics.fillStyle(0xffffff, 0.6);
+            graphics.fillCircle(-45, -30, 1);
+            graphics.fillCircle(40, -40, 1.5);
+            graphics.fillCircle(-50, 25, 1);
+            graphics.fillCircle(45, 30, 1);
+            graphics.fillCircle(0, 50, 1.5);
+            graphics.fillCircle(-25, -50, 1);
+
+            // Outer border with glow
+            graphics.lineStyle(2, 0x00b7ff, 1);
+            graphics.strokeRoundedRect(-width/2, -height/2, width, height, 10);
+        }
+
+        function drawCardFront(scene, container, width, height, cardInfo) {
+            const bg = scene.add.graphics();
+
+            // Card color based on value
+            let borderColor, fillColor;
+            if (cardInfo.color === 'cyan') {
+                borderColor = 0x00b7ff;
+                fillColor = 0x001d3d;
+            } else if (cardInfo.color === 'orange') {
+                borderColor = 0xff6b35;
+                fillColor = 0x3d1d00;
+            } else {
+                borderColor = 0xffffff;
+                fillColor = 0x1d1d3d;
+            }
+
+            bg.lineStyle(3, borderColor, 1);
+            bg.fillStyle(fillColor, 1);
+            bg.fillRoundedRect(-width/2, -height/2, width, height, 10);
+            bg.strokeRoundedRect(-width/2, -height/2, width, height, 10);
+
+            container.add(bg);
+
+            // Add content based on card type
+            if (cardInfo.type === 'number') {
+                // Large number display
+                const numText = scene.add.text(0, 5, cardInfo.content, {
+                    fontSize: '52px',
+                    fontFamily: 'Arial',
+                    color: '#ffffff',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5);
+                container.add(numText);
+
+            } else if (cardInfo.type === 'visual') {
+                // Draw number line visual
+                drawNumberLineVisual(scene, container, cardInfo.value, width, height);
+
+            } else if (cardInfo.type === 'description') {
+                // Description text
+                const descText = scene.add.text(0, 5, cardInfo.content, {
+                    fontSize: '16px',
+                    fontFamily: 'Arial',
+                    color: '#ffffff',
+                    align: 'center',
+                    lineSpacing: 4
+                }).setOrigin(0.5);
+                container.add(descText);
+            }
+
+            // Type indicator at top
+            const typeText = scene.add.text(0, -height/2 + 12,
+                cardInfo.type === 'number' ? 'NUMBER' :
+                cardInfo.type === 'visual' ? 'VISUAL' : 'MEANING',
+                {
+                    fontSize: '10px',
+                    fontFamily: 'Arial',
+                    color: '#999999'
+                }).setOrigin(0.5);
+            container.add(typeText);
+        }
+
+        function drawNumberLineVisual(scene, container, value, width, height) {
+            const graphics = scene.add.graphics();
+
+            // Number line - adjusted for smaller cards
+            const lineX = 0;
+            const lineTop = -50;
+            const lineBottom = 50;
+            const lineHeight = lineBottom - lineTop;
+            const unitSize = lineHeight / 10; // Scale for -5 to +5
+
+            // Vertical line
+            graphics.lineStyle(2, 0x666666, 1);
+            graphics.lineBetween(lineX, lineTop, lineX, lineBottom);
+
+            // Zero point (space station)
+            const zeroY = 0;
+            graphics.fillStyle(0xffffff, 1);
+            graphics.fillCircle(lineX, zeroY, 5);
+
+            // Station symbol
+            graphics.lineStyle(2, 0xffffff, 1);
+            graphics.strokeRect(lineX - 8, zeroY - 2.5, 16, 5);
+
+            // Tick marks
+            for (let i = -5; i <= 5; i++) {
+                if (i === 0) continue;
+                const tickY = zeroY - (i * unitSize);
+                graphics.lineStyle(1, 0x444444, 1);
+                graphics.lineBetween(lineX - 4, tickY, lineX + 4, tickY);
+            }
+
+            // Spaceship position
+            const shipY = zeroY - (value * unitSize);
+            graphics.fillStyle(value >= 0 ? 0x00b7ff : 0xff6b35, 1);
+
+            // Simple spaceship triangle - smaller
+            graphics.beginPath();
+            graphics.moveTo(lineX + 15, shipY);
+            graphics.lineTo(lineX + 28, shipY - 6);
+            graphics.lineTo(lineX + 28, shipY + 6);
+            graphics.closePath();
+            graphics.fillPath();
+
+            // Connection line
+            graphics.lineStyle(1, value >= 0 ? 0x00b7ff : 0xff6b35, 0.5);
+            graphics.lineBetween(lineX, shipY, lineX + 15, shipY);
+
+            container.add(graphics);
+        }
+
+        function handleCardClick(scene, card) {
+            if (!canClick || card.isFlipped || card.isMatched) return;
+
+            // Flip the card
+            flipCard(scene, card, true);
+            selectedCards.push(card);
+
+            // Check if we have 3 cards selected
+            if (selectedCards.length === 3) {
+                canClick = false;
+                scene.time.delayedCall(800, () => checkMatch(scene));
+            }
+        }
+
+        function flipCard(scene, card, faceUp) {
+            card.isFlipped = faceUp;
+
+            scene.tweens.add({
+                targets: card,
+                scaleX: 0,
+                duration: 150,
+                onComplete: () => {
+                    card.backGraphics.setVisible(!faceUp);
+                    card.frontContainer.setVisible(faceUp);
+                    scene.tweens.add({
+                        targets: card,
+                        scaleX: 1,
+                        duration: 150
+                    });
+                }
+            });
+        }
+
+        function checkMatch(scene) {
+            const [card1, card2, card3] = selectedCards;
+
+            // Check if all three cards are from the same set
+            const setsMatch = card1.cardInfo.set === card2.cardInfo.set &&
+                             card2.cardInfo.set === card3.cardInfo.set;
+
+            if (setsMatch) {
+                // Correct match!
+                selectedCards.forEach(card => {
+                    card.isMatched = true;
+                    showMatchFeedback(scene, card, true);
+                });
+
+                matchedSets++;
+                scoreText.setText(`Sets Matched: ${matchedSets}/6`);
+
+                // Get the value of the matched set for animation
+                const matchedValue = card1.cardInfo.value;
+
+                // Hide tutorial and show animation
+                scene.time.delayedCall(800, () => {
+                    tutorialContainer.setVisible(false);
+                    showSpaceshipAnimation(scene, matchedValue);
+                });
+
+                // Check win condition
+                if (matchedSets === 6) {
+                    scene.time.delayedCall(3500, () => showWinMessage(scene));
+                }
+
+                selectedCards = [];
+                canClick = true;
+
+            } else {
+                // Incorrect match
+                selectedCards.forEach(card => {
+                    showMatchFeedback(scene, card, false);
+                });
+
+                scene.time.delayedCall(1500, () => {
+                    selectedCards.forEach(card => {
+                        if (!card.isMatched) {
+                            flipCard(scene, card, false);
+                        }
+                    });
+                    selectedCards = [];
+                    canClick = true;
+                });
+            }
+        }
+
+        function showMatchFeedback(scene, card, isCorrect) {
+            if (isCorrect) {
+                // Green glow pulse
+                const glow = scene.add.graphics();
+                glow.lineStyle(4, 0x00ff88, 0.8);
+                glow.strokeRoundedRect(-61, -76, 115, 145, 10);
+                card.add(glow);
+
+                scene.tweens.add({
+                    targets: glow,
+                    alpha: 0,
+                    duration: 1000,
+                    onComplete: () => glow.destroy()
+                });
+
+            } else {
+                // Red shake
+                const originalX = card.x;
+                scene.tweens.add({
+                    targets: card,
+                    x: originalX - 5,
+                    duration: 50,
+                    yoyo: true,
+                    repeat: 3,
+                    onComplete: () => {
+                        card.x = originalX;
+                    }
+                });
+
+                // Red flash
+                const flash = scene.add.graphics();
+                flash.lineStyle(4, 0xff0044, 0.8);
+                flash.strokeRoundedRect(-61, -76, 115, 145, 10);
+                card.add(flash);
+
+                scene.tweens.add({
+                    targets: flash,
+                    alpha: 0,
+                    duration: 500,
+                    onComplete: () => flash.destroy()
+                });
+            }
+        }
+
+        function showWinMessage(scene) {
+            // Semi-transparent overlay
+            const overlay = scene.add.rectangle(600, 400, 1200, 800, 0x000000, 0.8);
+
+            // Win message
+            const winText = scene.add.text(600, 300, 'MISSION COMPLETE!', {
+                fontSize: '72px',
+                fontFamily: 'Arial',
+                color: '#00ff88',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            const subText = scene.add.text(600, 380, 'You matched all the integers!', {
+                fontSize: '32px',
+                fontFamily: 'Arial',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+
+            // Pulse animation
+            scene.tweens.add({
+                targets: winText,
+                scale: 1.1,
+                duration: 500,
+                yoyo: true,
+                repeat: -1
+            });
+
+            // Show restart button
+            restartButton.setVisible(true);
+            restartButton.setDepth(100);
+        }
+
+        function createRestartButton(scene) {
+            const buttonWidth = 200;
+            const buttonHeight = 60;
+            const buttonX = 600;
+            const buttonY = 500;
+
+            const button = scene.add.container(buttonX, buttonY);
+
+            const bg = scene.add.graphics();
+            bg.fillStyle(0x00b7ff, 1);
+            bg.fillRoundedRect(-buttonWidth/2, -buttonHeight/2, buttonWidth, buttonHeight, 10);
+            bg.lineStyle(3, 0xffffff, 1);
+            bg.strokeRoundedRect(-buttonWidth/2, -buttonHeight/2, buttonWidth, buttonHeight, 10);
+
+            const text = scene.add.text(0, 0, 'RESTART', {
+                fontSize: '28px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+
+            button.add([bg, text]);
+            button.setSize(buttonWidth, buttonHeight);
+            button.setInteractive({ useHandCursor: true });
+            button.setVisible(false);
+
+            button.on('pointerdown', () => {
+                scene.scene.restart();
+                matchedSets = 0;
+                selectedCards = [];
+                cards = [];
+                canClick = true;
+            });
+
+            button.on('pointerover', () => {
+                scene.tweens.add({
+                    targets: button,
+                    scaleX: 1.1,
+                    scaleY: 1.1,
+                    duration: 100
+                });
+            });
+
+            button.on('pointerout', () => {
+                scene.tweens.add({
+                    targets: button,
+                    scaleX: 1,
+                    scaleY: 1,
+                    duration: 100
+                });
+            });
+
+            restartButton = button;
+        }
+
+        function update() {
+            // Game loop - not needed for this game
+        }
+    </script>
+</body>
+</html>
